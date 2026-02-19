@@ -16,18 +16,18 @@ export const Sidebar_links = [
       name: "social",
       link: "/social",
     },
-    {
-      name: "connect",
-      link: "/connect",
-    },
+    // {
+    //   name: "connect",
+    //   link: "/connect",
+    // },
     {
       name: "Market",
       link: "/market",
     },
-    {
-      name: "Gym Hub",
-      link: "/gymhub",
-    },
+    // {
+    //   name: "Gym Hub",
+    //   link: "/gymhub",
+    // },
   ],
  },
  {
@@ -65,12 +65,12 @@ export const Sidebar_links = [
   sublinks: [],
  },
  
- {
-  name: 'Connect Managment',
-  link: '/connect',
-  icon: images.love,
-  sublinks: [],
- },
+//  {
+//   name: 'Connect Managment',
+//   link: '/connect',
+//   icon: images.love,
+//   sublinks: [],
+//  },
  
  {
   name: 'Market Managment',
@@ -78,12 +78,12 @@ export const Sidebar_links = [
   icon: images.market,
   sublinks: [],
  },
- {
-  name: 'Gym Paddy Managment',
-  link: '/gym',
-  icon: images.gym,
-  sublinks: [],
- },
+//  {
+//   name: 'Gym Paddy Managment',
+//   link: '/gym',
+//   icon: images.gym,
+//   sublinks: [],
+//  },
  {
   name: 'Analytics & Report',
   link: '/analytics',

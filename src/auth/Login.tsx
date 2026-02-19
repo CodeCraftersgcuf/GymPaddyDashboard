@@ -21,6 +21,41 @@ const Login: React.FC = () => {
     }
   });
 
+  // Ensure all assets are included in the build by referencing them
+  const allAssets = {
+    booking: images.booking,
+    dashboard: images.dashboard,
+    earning: images.earning,
+    notification: images.notification,
+    rating: images.rating,
+    riderManagement: images.riderManagement,
+    setting: images.setting,
+    statement: images.statement,
+    support: images.support,
+    tracking: images.tracking,
+    userManagement: images.userManagement,
+    admin: images.admin,
+    logo: images.logo,
+    gym: images.gym,
+    market: images.market,
+    love: images.love,
+    social: images.social,
+    ads: images.ads,
+    verification: images.verification,
+    subcription: images.subcription,
+    transaction: images.transaction,
+    report: images.report,
+    Bell: images.Bell,
+    revenue: images.revenue,
+    heart: images.heart,
+    comments: images.comments,
+    marketIcon: images.marketIcon,
+    GymIcon: images.GymIcon,
+    RevenueIcon: images.RevenueIcon,
+    user: images.user,
+    gymBg: images.gymBg,
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
@@ -32,6 +67,39 @@ const Login: React.FC = () => {
       >
         <div className="flex justify-center mb-4">
           <img src={images.logo} alt="Logo" className="w-16 h-16" /> {/* Replace with your logo */}
+        </div>
+        
+        {/* Hidden images to ensure they're included in the build */}
+        <div style={{ display: 'none' }}>
+          <img src={images.booking} alt="booking" />
+          <img src={images.dashboard} alt="dashboard" />
+          <img src={images.earning} alt="earning" />
+          <img src={images.notification} alt="notification" />
+          <img src={images.rating} alt="rating" />
+          <img src={images.riderManagement} alt="riderManagement" />
+          <img src={images.setting} alt="setting" />
+          <img src={images.statement} alt="statement" />
+          <img src={images.support} alt="support" />
+          <img src={images.tracking} alt="tracking" />
+          <img src={images.userManagement} alt="userManagement" />
+          <img src={images.admin} alt="admin" />
+          <img src={images.gym} alt="gym" />
+          <img src={images.market} alt="market" />
+          <img src={images.love} alt="love" />
+          <img src={images.social} alt="social" />
+          <img src={images.ads} alt="ads" />
+          <img src={images.verification} alt="verification" />
+          <img src={images.subcription} alt="subcription" />
+          <img src={images.transaction} alt="transaction" />
+          <img src={images.report} alt="report" />
+          <img src={images.Bell} alt="Bell" />
+          <img src={images.revenue} alt="revenue" />
+          <img src={images.heart} alt="heart" />
+          <img src={images.comments} alt="comments" />
+          <img src={images.marketIcon} alt="marketIcon" />
+          <img src={images.GymIcon} alt="GymIcon" />
+          <img src={images.RevenueIcon} alt="RevenueIcon" />
+          <img src={images.user} alt="user" />
         </div>
         <h2 className="text-2xl font-semibold text-center mb-1">Login</h2>
         <p className="text-center text-gray-500 mb-6">Login to your dashboard</p>

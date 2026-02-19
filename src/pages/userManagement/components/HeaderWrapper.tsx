@@ -17,9 +17,9 @@ const HeaderWrapper: React.FC<props> = ({ children, activeTab, setActiveTab, use
     const tabs = [
         { id: `/user/management/profile/${user}`, label: 'Activity', image: images.user },
         { id: `/user/management/${user}/social`, label: 'Socials', image: images.social },
-        { id: `/user/management/${user}/connect`, label: 'Connect', image: images.love },
+        // { id: `/user/management/${user}/connect`, label: 'gym', image: images.love },
         { id: `/user/management/${user}/market`, label: 'Market', image: images.market },
-        { id: `/user/management/${user}/gymhub`, label: 'GymHub', image: images.gym },
+        // { id: `/user/management/${user}/gymhub`, label: 'GymHub', image: images.gym },
         { id: `/user/management/${user}/transactions`, label: 'Transactions', image: images.transaction },
         { id: `/user/management/${user}/verifications`, label: 'Verifications', image: images.verification },
         { id: `/user/management/${user}/chat`, label: 'Chat', image: images.support },

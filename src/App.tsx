@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
 import './App.css'
+// Ensure all assets are included in the build by importing them directly
+import images from "./constants/images";
 
 // Importing all pages
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -37,6 +39,47 @@ import Login from "./auth/Login";
 
 
 const App: React.FC = () => {
+  // Ensure all assets are included in the build by referencing them
+  // This prevents tree-shaking of unused assets
+  const allAssets = {
+    booking: images.booking,
+    dashboard: images.dashboard,
+    earning: images.earning,
+    notification: images.notification,
+    rating: images.rating,
+    riderManagement: images.riderManagement,
+    setting: images.setting,
+    statement: images.statement,
+    support: images.support,
+    tracking: images.tracking,
+    userManagement: images.userManagement,
+    admin: images.admin,
+    logo: images.logo,
+    gym: images.gym,
+    market: images.market,
+    love: images.love,
+    social: images.social,
+    ads: images.ads,
+    verification: images.verification,
+    subcription: images.subcription,
+    transaction: images.transaction,
+    report: images.report,
+    Bell: images.Bell,
+    revenue: images.revenue,
+    heart: images.heart,
+    comments: images.comments,
+    marketIcon: images.marketIcon,
+    GymIcon: images.GymIcon,
+    RevenueIcon: images.RevenueIcon,
+    user: images.user,
+    gymBg: images.gymBg,
+  };
+  
+  // Log to ensure they're not tree-shaken (this will be removed in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('All assets loaded:', Object.keys(allAssets));
+  }
+  
   return (
     <Router>
       <Routes>

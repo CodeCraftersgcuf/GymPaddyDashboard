@@ -1,40 +1,47 @@
+// src/constants/images.ts
+import booking from '../assets/icons/booking.svg';
+import dashboard from '../assets/icons/mage_dashboard.svg';
+import earning from '../assets/icons/earning.svg';
+import notification from '../assets/icons/notification.svg';
+import rating from '../assets/icons/rating.svg';
+import riderManagement from '../assets/icons/rider_managment.svg';
+import setting from '../assets/icons/GearSix.svg';
+import statement from '../assets/icons/statement.svg';
+import support from '../assets/icons/support.svg';
+import tracking from '../assets/icons/tracking.svg';
+import userManagement from '../assets/icons/user_management.svg';
+
+import admin from '../assets/images/admin.png';
+import logo from '../assets/images/logo.png';
+import gym from '../assets/icons/Barbell.svg';
+
+import market from '../assets/images/market.svg';
+import love from '../assets/images/love.svg';
+import social from '../assets/images/social.svg';
+import ads from '../assets/images/ads.svg';
+import verification from '../assets/images/verification.svg';
+import subcription from '../assets/images/subcription.svg';
+import transaction from '../assets/images/transaction.svg';
+import report from '../assets/images/report.svg';
+import Bell from '../assets/icons/Bell.svg';
+
+import revenue from '../assets/cardIcons/revenue.svg';
+import heart from '../assets/cardIcons/Heart.svg';
+import comments from '../assets/cardIcons/ChatsCircle.svg';
+import marketIcon from '../assets/cardIcons/ShoppingBag.svg';
+import GymIcon from '../assets/cardIcons/Barbell.svg';
+import RevenueIcon from '../assets/cardIcons/Money.svg';
+import user from '../assets/cardIcons/Users.svg';
+
+import gymBg from '../assets/images/gym_bg.jpg';
 
 const images = {
-  booking: "/src/assets/icons/booking.svg",
-  dashboard: "/src/assets/icons/mage_dashboard.svg",
-  earning: "/src/assets/icons/earning.svg",
-  notification: "/src/assets/icons/notification.svg",
-  rating: "/src/assets/icons/rating.svg",
-  riderManagement: "/src/assets/icons/rider_managment.svg",
-  setting: "/src/assets/icons/GearSix.svg",
-  statement: "/src/assets/icons/statement.svg",
-  support: "/src/assets/icons/support.svg",
-  tracking: "/src/assets/icons/tracking.svg",
-  userManagement: "/src/assets/icons/user_management.svg",
-  admin: "/src/assets/images/admin.png",
-  logo: '/src/assets/images/logo.png',
-  gym: '/src/assets/icons/Barbell.svg',
-  market: "/src/assets/images/market.svg",
-  love: '/src/assets/images/love.svg',
-  social: "/src/assets/images/social.svg",
-  ads: "/src/assets/images/ads.svg",
-  verification: "/src/assets/images/verification.svg",
-  subcription: "/src/assets/images/subcription.svg",
-  transaction: "/src/assets/images/transaction.svg",
-  report: "/src/assets/images/report.svg",
-  Bell : '/src/assets/icons/Bell.svg',
-  revenue : '/src/assets/cardIcons/revenue.svg',
-
-  // social icons 
-  heart : "/src/assets/cardIcons/Heart.svg",
-  comments : "/src/assets/cardIcons/ChatsCircle.svg",
-  marketIcon : "/src/assets/cardIcons/ShoppingBag.svg",
-  GymIcon : "/src/assets/cardIcons/Barbell.svg",
-  RevenueIcon : "/src/assets/cardIcons/Money.svg",
-  user : "/src/assets/cardIcons/Users.svg",
-
-  // login bg 
-  gymBg : '/src/assets/images/gym_bg.jpg'
+  booking, dashboard, earning, notification, rating, riderManagement,
+  setting, statement, support, tracking, userManagement,
+  admin, logo, gym, market, love, social, ads, verification,
+  subcription, transaction, report, Bell,
+  revenue, heart, comments, marketIcon, GymIcon, RevenueIcon, user,
+  gymBg,
 };
 
 export default images;
