@@ -1127,7 +1127,7 @@ export const WalletStats = [
 
 export const TransactionFilter = [
     { name: 'all', value: 'all' },
-    { name: 'successfull', value: 'successfull' },
+    { name: 'completed', value: 'completed' },
     { name: 'pending', value: 'pending' },
     { name: 'failed', value: 'failed' },
 ]

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import Modal from '../../../../components/Modal';
-import { dummyImage } from '../../../../constants/help';
+import { avatarUrl } from '../../../../constants/help';
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -49,8 +49,7 @@ const AdminRow: React.FC<Props> = ({ displayData }) => {
         </td>
         <td className="p-4 flex items-center gap-2">
           <img
-            // src={displayData.profile_picture || dummyImage()}
-            src={dummyImage()}
+            src={avatarUrl(displayData.profile_picture, displayData.fullName)}
             alt="profile"
             className="w-10 h-10 rounded-full"
           />
@@ -78,7 +77,7 @@ const AdminRow: React.FC<Props> = ({ displayData }) => {
         <div className="flex flex-col gap-4 p-4">
           <label className="flex flex-col items-center justify-center">
             <img
-              src={formData.profile_picture || dummyImage()}
+              src={avatarUrl(formData.profile_picture, formData.fullName)}
               alt="Avatar"
               className="w-24 h-24 rounded-full object-cover"
             />

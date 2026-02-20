@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import images from '../constants/images';
 import { useNavigate } from 'react-router-dom';
+import apiCall from '../utils/apiCall';
+import { API_ROUTES } from '../config/apiRoutes';
 
 const Login: React.FC = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -15,9 +20,24 @@ const Login: React.FC = () => {
       email: Yup.string().email('Invalid email address').required('Email is required'),
       password: Yup.string().min(6, 'Minimum 6 characters').required('Password is required')
     }),
-    onSubmit: (values) => {
-      console.log('Login Data:', values);
-      navigate('/dashboard')
+    onSubmit: async (values) => {
+      setIsLoading(true);
+      setError('');
+      
+      try {
+        const response = await apiCall.post<{ access_token: string; user: any }>(
+          API_ROUTES.AUTH.LOGIN,
+          values
+        );
+        
+        localStorage.setItem('authToken', response.access_token);
+        localStorage.setItem('adminUser', JSON.stringify(response.user));
+        navigate('/dashboard');
+      } catch (err: any) {
+        setError(err.message || 'Login failed. Please check your credentials.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   });
 
@@ -104,6 +124,12 @@ const Login: React.FC = () => {
         <h2 className="text-2xl font-semibold text-center mb-1">Login</h2>
         <p className="text-center text-gray-500 mb-6">Login to your dashboard</p>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
         <div className="mb-4">
           <input
             name="email"
@@ -113,6 +139,7 @@ const Login: React.FC = () => {
             value={formik.values.email}
             placeholder="Enter Email"
             className="w-full border rounded p-2 focus:outline-none"
+            disabled={isLoading}
           />
           {formik.touched.email && formik.errors.email && (
             <p className="text-sm text-red-500 mt-1">{formik.errors.email}</p>
@@ -128,6 +155,7 @@ const Login: React.FC = () => {
             value={formik.values.password}
             placeholder="Enter Password"
             className="w-full border rounded p-2 focus:outline-none"
+            disabled={isLoading}
           />
           {formik.touched.password && formik.errors.password && (
             <p className="text-sm text-red-500 mt-1">{formik.errors.password}</p>
@@ -136,9 +164,10 @@ const Login: React.FC = () => {
 
         <button
           type="submit"
-          className="cursor-pointer w-full bg-red-500 text-white font-semibold py-2 rounded hover:bg-red-600"
+          className="cursor-pointer w-full bg-red-500 text-white font-semibold py-2 rounded hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed"
+          disabled={isLoading}
         >
-          Login
+          {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </div>

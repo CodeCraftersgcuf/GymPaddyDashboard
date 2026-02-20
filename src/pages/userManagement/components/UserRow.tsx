@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { dummyImage } from "../../../constants/help";
+import { avatarUrl } from "../../../constants/help";
 import ItemAlign from "../../../components/alignments/ItemAlign";
 import MoreDropdown from "../../../components/MoreDropdown";
 import { AlertOctagon, AlertTriangle } from "lucide-react";
@@ -31,7 +31,7 @@ const UserRow: React.FC<Props> = ({ displayData }) => {
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
-              src={displayData.profile_picture || dummyImage()}
+              src={avatarUrl(displayData.profile_picture, displayData.fullName)}
               alt="profile"
               className="w-10 h-10 rounded-full"
             />
@@ -50,7 +50,10 @@ const UserRow: React.FC<Props> = ({ displayData }) => {
         <td className="p-2 py-4">{new Date(displayData.lastLogin).toLocaleString()}</td>
         <td className="p-2 py-4">
           <ItemAlign>
-            <Link to={`/user/management/profile/${displayData.username}`} className="bg-red-500 text-white px-4 py-2 rounded-lg">Details</Link>
+            <Link
+              to={displayData.username ? `/user/management/profile/${displayData.username}` : '#'}
+              className={`bg-red-500 text-white px-4 py-2 rounded-lg ${!displayData.username ? 'opacity-50 pointer-events-none' : ''}`}
+            >Details</Link>
             <MoreDropdown
               menuClass="bg-white min-w-[150px]"
             >

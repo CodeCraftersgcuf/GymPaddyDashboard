@@ -1,13 +1,29 @@
 import React, { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom';
 import HeaderWrapper from '../userManagement/components/HeaderWrapper';
-import {  LivePostData, socialManagementStats, StatusPostData, UserPostData } from '../../constants/Data';
 import StatsCard from '../../components/StatsCard';
 import FilterTab from '../../components/FilterTab';
 import PostPortion from './Portions/PostPortion';
 import StatusPortion from './Portions/StatusPortion';
 import LivePortion from './Portions/LivePortion';
-const RenderComponent = (activeTab: string, data?: any) => {
+import StatsCardSkeleton from '../../components/StatsCardSkeleton';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useGetAllPosts, useGetStatuses, useGetLiveStreams, useGetSocialStats } from '../../utils/queries/socialQueries';
+import images from '../../constants/images';
+
+const RenderComponent = (activeTab: string, data?: any, isLoading?: boolean, error?: any) => {
+  if (isLoading) {
+    return <LoadingSpinner className="h-64" />;
+  }
+  
+  if (error) {
+    return (
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        Error loading data. Please try again.
+      </div>
+    );
+  }
+
   switch (activeTab) {
     case 'all':
       return <PostPortion data={data} />;
@@ -25,6 +41,12 @@ const SocialManagement: React.FC = () => {
   const [activeTab, setactiveTab] = useState('all');
   const { username } = useParams();
   const [activePortion, setActivePortion] = useState('all')
+  
+  const { data: posts, isLoading: postsLoading, error: postsError } = useGetAllPosts();
+  const { data: statuses, isLoading: statusesLoading, error: statusesError } = useGetStatuses();
+  const { data: liveStreams, isLoading: liveLoading, error: liveError } = useGetLiveStreams();
+  const { data: stats, isLoading: statsLoading } = useGetSocialStats();
+
   const tabs = [
     {
       name: 'all', value: 'all'
@@ -36,18 +58,77 @@ const SocialManagement: React.FC = () => {
       name: 'live', value: 'live'
     },
   ]
+
   const hanldeValues = (activeTab: string) => {
     switch (activeTab) {
       case 'all':
-        return UserPostData;
+        return posts || [];
       case 'status':
-        return StatusPostData;
+        return statuses || [];
       case 'live':
-        return LivePostData;
+        return liveStreams || [];
+      default:
+        return [];
+    }
+  }
+
+  const getLoadingState = (activeTab: string) => {
+    switch (activeTab) {
+      case 'all':
+        return postsLoading;
+      case 'status':
+        return statusesLoading;
+      case 'live':
+        return liveLoading;
+      default:
+        return false;
+    }
+  }
+
+  const getErrorState = (activeTab: string) => {
+    switch (activeTab) {
+      case 'all':
+        return postsError;
+      case 'status':
+        return statusesError;
+      case 'live':
+        return liveError;
       default:
         return null;
     }
   }
+
+  // Transform stats data to match StatsCard format
+  const socialManagementStats = stats ? [
+    {
+      icon: images.social,
+      heading: 'Total',
+      subHeading: 'Posts',
+      IconColor: '#FF0000',
+      value: stats.totalPosts || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.social,
+      heading: 'Total',
+      subHeading: 'Statuses',
+      IconColor: '#0000FF',
+      value: stats.totalStatuses || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.social,
+      heading: 'Live',
+      subHeading: 'Streams',
+      IconColor: '#008000',
+      value: stats.liveStreams || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+  ] : [];
+
   return (
     <HeaderWrapper
       location={location}
@@ -56,9 +137,17 @@ const SocialManagement: React.FC = () => {
       setActiveTab={setactiveTab}
     >
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {socialManagementStats.map((item, index) => (
-          <StatsCard {...item} key={index} />
-        ))}
+        {statsLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          socialManagementStats.map((item, index) => (
+            <StatsCard {...item} key={index} />
+          ))
+        )}
       </div>
       <h1 className='text-2xl font-medium'>Social Activity</h1>
       <FilterTab
@@ -66,7 +155,12 @@ const SocialManagement: React.FC = () => {
         handleValue={setActivePortion}
         activeTab={tabs[0].name}
       />
-      {RenderComponent(activePortion, hanldeValues(activePortion))}
+      {RenderComponent(
+        activePortion, 
+        hanldeValues(activePortion),
+        getLoadingState(activePortion),
+        getErrorState(activePortion)
+      )}
     </HeaderWrapper>
   )
 }

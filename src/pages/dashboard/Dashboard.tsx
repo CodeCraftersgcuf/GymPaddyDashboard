@@ -1,6 +1,5 @@
 import React from "react";
 import Horizontal from "../../components/alignments/Horizontal";
-import { dashboardStatics, latestUsers } from "../../constants/Data";
 import StatsCard from "../../components/StatsCard";
 import SiteStatisticsChart from "./components/SiteStatisticsChart";
 import Button from "../../components/Buttons/Button";
@@ -8,76 +7,66 @@ import Vertical from "../../components/alignments/Vertical";
 import PostCan from "../../components/PostCan";
 import TableCan from "../../components/TableCan";
 import LatestUserRow from "./components/LatestUserRow";
+import StatsCardSkeleton from "../../components/StatsCardSkeleton";
+import TableSkeleton from "../../components/TableSkeleton";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { useGetDashboardStats, useGetLatestUsers, useGetLatestPosts } from "../../utils/queries/dashboardQueries";
+import images from "../../constants/images";
 
 const Dashboard: React.FC = () => {
-  const postData = [
-    {
-      "Description": "John Doe commented on your post.",
-      "time": "Just now"
-    },
-    {
-      "Description": "Your order #1024 has been shipped.",
-      "time": "5 minutes ago"
-    },
-    {
-      "Description": "New user registered: alice@example.com",
-      "time": "10 minutes ago"
-    },
-    {
-      "Description": "System backup completed successfully.",
-      "time": "30 minutes ago"
-    },
-    {
-      "Description": "You received a new message from Sarah.",
-      "time": "1 hour ago"
-    },
-    {
-      "Description": "Password changed successfully.",
-      "time": "2 hours ago"
-    },
-    {
-      "Description": "Meeting scheduled with the marketing team.",
-      "time": "3 hours ago"
-    },
-    {
-      "Description": "Invoice #5678 has been generated.",
-      "time": "6 hours ago"
-    },
-    {
-      "Description": "Database maintenance completed.",
-      "time": "9 hours ago"
-    },
-    {
-      "Description": "Reminder: Project deadline is tomorrow.",
-      "time": "12 hours ago"
-    },
-    {
-      "Description": "Emma uploaded a new document to the shared folder.",
-      "time": "18 hours ago"
-    },
-    {
-      "Description": "You were mentioned in a comment by Michael.",
-      "time": "1 day ago"
-    },
-    {
-      "Description": "New blog post published: 'Top 10 UI Tips'.",
-      "time": "2 days ago"
-    },
-    {
-      "Description": "Weekly newsletter sent to all subscribers.",
-      "time": "3 days ago"
-    }
-  ]
+  const { data: stats, isLoading: statsLoading, error: statsError } = useGetDashboardStats();
+  const { data: latestUsers, isLoading: usersLoading, error: usersError } = useGetLatestUsers();
+  const { data: latestPosts, isLoading: postsLoading, error: postsError } = useGetLatestPosts();
 
+  // Transform stats data to match StatsCard format
+  const dashboardStatics = stats ? [
+    {
+      icon: images.user,
+      heading: 'Total',
+      subHeading: 'Users',
+      IconColor: '#FF0000',
+      value: stats.totalUsers || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.transaction,
+      heading: 'Total',
+      subHeading: 'Transactions',
+      IconColor: '#0000FF',
+      value: stats.totalTransactions || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.revenue,
+      heading: 'Total',
+      subHeading: 'Revenue',
+      IconColor: '#008000',
+      value: stats.totalRevenue || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+  ] : [];
 
   return (
     <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {
+        {statsLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : statsError ? (
+          <div className="col-span-3 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            Error loading dashboard stats. Please try again.
+          </div>
+        ) : (
           dashboardStatics.map((item, index) => (
             <StatsCard {...item} key={index} />
           ))
-        }
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -99,32 +88,57 @@ const Dashboard: React.FC = () => {
             </Button>
           </Vertical>
           <div className="p-1 w-full h-[400px] overflow-auto bg-white rounded-lg shadow-lg border border-gray-300 divide-gray-200">
-            {
-              postData.map((item, index) => (
-                <PostCan key={index} {...item} />
+            {postsLoading ? (
+              <LoadingSpinner className="h-full" />
+            ) : postsError ? (
+              <div className="p-4 text-center text-red-600">
+                Error loading posts
+              </div>
+            ) : latestPosts && latestPosts.length > 0 ? (
+              latestPosts.map((item, index) => (
+                <PostCan
+                  key={index}
+                  Description={item.description}
+                  time={item.time}
+                  profile_picture={item.profile_picture ?? undefined}
+                />
               ))
-            }
+            ) : (
+              <div className="p-4 text-center text-gray-500">
+                No posts available
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-
       <div className="space-y-4">
         <h1 className="text-2xl">Latest Users</h1>
-        <TableCan
-          headerTr={[
-            "Full Name",
-            "Username",
-            "Email",
-            "Phone number",
-            "Age",
-            "Last login",
-            "Action"
-          ]
-          }
-          dataTr={latestUsers}
-          TrName={LatestUserRow}
-        />
+        {usersLoading ? (
+          <TableSkeleton rows={5} columns={7} />
+        ) : usersError ? (
+          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            Error loading users. Please try again.
+          </div>
+        ) : latestUsers && latestUsers.length > 0 ? (
+          <TableCan
+            headerTr={[
+              "Full Name",
+              "Username",
+              "Email",
+              "Phone number",
+              "Age",
+              "Last login",
+              "Action"
+            ]}
+            dataTr={latestUsers}
+            TrName={LatestUserRow}
+          />
+        ) : (
+          <div className="p-4 bg-white rounded-lg shadow-lg border border-gray-300 text-center text-gray-500">
+            No users available
+          </div>
+        )}
       </div>
     </Horizontal>
   );

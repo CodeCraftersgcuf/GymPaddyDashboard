@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import Button from '../../../components/Buttons/Button';
 import TransactionDetails from '../../userManagement/portions/transactions/components/TransactionDetails';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 
 interface TransactionRowProps {
   displayData: {
     id: string;
     amount: string;
-    status: 'successfull' | 'failed' | 'pending';
-    type: 'topup' | 'withdrawal';
+    status: 'completed' | 'failed' | 'pending';
+    type: 'topup' | 'withdrawal' | string;
     date: string;
-    fullName?:string;
-    profile_picture?: string; 
-    description?: string;
+    fullName?: string;
+    profile_picture?: string | null;
+    description?: string | null;
     accountDetails?: {
       accountName: string;
       accountNumber: string;
@@ -26,12 +26,14 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
 
   const getStatusIcon = () => {
     switch (displayData.status) {
-      case 'successfull':
+      case 'completed':
         return <span className="w-4 h-4 bg-green-600 block rounded-sm" />;
       case 'failed':
         return <span className="w-4 h-4 bg-red-600 block rounded-sm" />;
       case 'pending':
         return <span className="w-4 h-4 bg-yellow-400 block rounded-sm" />;
+      default:
+        return <span className="w-4 h-4 bg-gray-400 block rounded-sm" />;
     }
   };
 
@@ -44,7 +46,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
-              src={displayData.profile_picture || dummyImage()}
+              src={avatarUrl(displayData.profile_picture, displayData.fullName)}
               alt="profile"
               className="w-10 h-10 rounded-full"
             />

@@ -1,26 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import HeaderWrapper from '../../components/HeaderWrapper';
 import Horizontal from '../../../../components/alignments/Horizontal';
-import {
-  ListingTableData,
-  ListingTableHeaders,
-  marketStatics,
-  marketTabs
-} from '../../../../constants/Data';
+import { ListingTableHeaders, marketTabs } from '../../../../constants/Data';
 import StatsCard from '../../../../components/StatsCard';
 import Vertical from '../../../../components/alignments/Vertical';
 import ItemAlign from '../../../../components/alignments/ItemAlign';
 import Dropdown from '../../../../components/Dropdown';
-import {
-  boostedFilter,
-  bulkFilter,
-  dates
-} from '../../../../constants/FiltersData';
+import { boostedFilter, bulkFilter, dates } from '../../../../constants/FiltersData';
 import SearchFilter from '../../../../components/SearchFilter';
 import TableCan from '../../../../components/TableCan';
 import ListingRow from './components/ListingRow';
 import FilterTab from '../../../../components/FilterTab';
+import { useGetUserByUsername } from '../../../../utils/queries/userQueries';
+import { useGetUserListings } from '../../../../utils/queries/marketQueries';
+import LoadingSpinner from '../../../../components/LoadingSpinner';
+import StatsCardSkeleton from '../../../../components/StatsCardSkeleton';
+import images from '../../../../constants/images';
 
 const Market: React.FC = () => {
   const location = useLocation();
@@ -29,30 +25,60 @@ const Market: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [boostStatus, setBoostStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState(ListingTableData);
+  
+  const { data: user, isLoading: userLoading } = useGetUserByUsername(username || '');
+  const { data: listings, isLoading: listingsLoading, error: listingsError } = useGetUserListings(user?.id?.toString() || '');
 
-  useEffect(() => {
-    let temp = [...ListingTableData];
+  const filteredData = useMemo(() => {
+    if (!listings || !Array.isArray(listings)) return [];
+    let temp = [...listings];
 
-    // Filter by boost status
     if (boostStatus !== 'all') {
       temp = temp.filter((item) => item.boostedStatus === boostStatus);
     }
 
-    // Filter by active tab (status)
     if (activeTab !== 'all') {
       temp = temp.filter((item) => item.status === activeTab);
     }
 
-    // Search filter
     if (searchTerm.trim() !== '') {
       temp = temp.filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    setFilteredData(temp);
-  }, [boostStatus, activeTab, searchTerm]);
+    return temp;
+  }, [listings, boostStatus, activeTab, searchTerm]);
+  
+  const marketStats = listings ? [
+    {
+      icon: images.marketIcon,
+      heading: 'Total',
+      subHeading: 'Listings',
+      IconColor: '#FF0000',
+      value: listings.length || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.marketIcon,
+      heading: 'Active',
+      subHeading: 'Listings',
+      IconColor: '#0000FF',
+      value: listings.filter(l => l.status === 'active').length || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.marketIcon,
+      heading: 'Boosted',
+      subHeading: 'Listings',
+      IconColor: '#008000',
+      value: listings.filter(l => l.boostedStatus === 'boosted').length || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+  ] : [];
 
   return (
     <HeaderWrapper
@@ -63,9 +89,17 @@ const Market: React.FC = () => {
     >
       <Horizontal>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {marketStatics.map((item, index) => (
-            <StatsCard {...item} key={index} />
-          ))}
+          {userLoading || listingsLoading ? (
+            <>
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+            </>
+          ) : (
+            marketStats.map((item, index) => (
+              <StatsCard {...item} key={index} />
+            ))
+          )}
         </div>
 
         <FilterTab
@@ -100,11 +134,19 @@ const Market: React.FC = () => {
           />
         </Vertical>
 
-        <TableCan
-          headerTr={ListingTableHeaders}
-          dataTr={filteredData}
-          TrName={ListingRow}
-        />
+        {listingsLoading ? (
+          <LoadingSpinner className="h-64" />
+        ) : listingsError ? (
+          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            Error loading listings. Please try again.
+          </div>
+        ) : (
+          <TableCan
+            headerTr={ListingTableHeaders}
+            dataTr={filteredData}
+            TrName={ListingRow}
+          />
+        )}
       </Horizontal>
     </HeaderWrapper>
   );

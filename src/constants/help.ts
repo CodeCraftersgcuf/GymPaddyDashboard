@@ -13,9 +13,19 @@ export function formatAmount(amount: any) {
     return roundedAmount.toLocaleString();
 }
 
+/** @deprecated Use avatarUrl() instead – dummyImage() generates a new random URL on every render */
 export function dummyImage() {
-    // https://randomuser.me/api/portraits/women/31.jpg using this link and math.random
     return `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100) + 1}.jpg`;
+}
+
+/**
+ * Returns the real profile picture URL when one exists, otherwise falls back to a
+ * stable generated avatar (consistent initials-based image, no random flickering).
+ */
+export function avatarUrl(picture?: string | null, name?: string | null): string {
+    if (picture) return picture;
+    const initials = encodeURIComponent((name || 'User').trim() || 'User');
+    return `https://ui-avatars.com/api/?name=${initials}&background=fee2e2&color=ef4444&bold=true&size=128`;
 }
 export function formatCreatedAt(timestamp : any) {
     const date = new Date(timestamp);

@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
-import { CheckCircle2, X } from 'lucide-react';
-import images from '../../../../constants/images';
+import { CheckCircle2, X, Loader2 } from 'lucide-react';
 import VerifyModal from '../../../verification/components/VerifyModal';
 import { useLocation, useParams } from 'react-router-dom';
 import HeaderWrapper from '../../components/HeaderWrapper';
-
-const businessData = {
-    businessName: 'Qamardeen Maleek',
-    category: 'Fitness',
-    email: 'qamardeenoladimeji@gmail.com',
-    phone: '07033484845',
-    document: images.admin,
-    status: 'pending' as 'pending' | 'approved' | 'rejected'
-};
+import { useGetUserByUsername } from '../../../../utils/queries/userQueries';
+import { useGetVerificationByUser } from '../../../../utils/queries/verificationQueries';
 
 const UserVerification: React.FC = () => {
-    const { username } = useParams();
+    const { username } = useParams<{ username: string }>();
     const location = useLocation();
-    const [activeTab, setactiveTab] = useState('all')
+    const [activeTab, setactiveTab] = useState('all');
     const [isEditModal, setIsEditModal] = useState(false);
 
-    const handleEdit = () => {
-        setIsEditModal(true);
-    };
+    const { data: user, isLoading: userLoading } = useGetUserByUsername(username ?? '');
+    const userId = user?.id?.toString() ?? '';
+    const { data: verification, isLoading: verLoading, refetch } = useGetVerificationByUser(userId);
+
+    const isLoading = userLoading || verLoading;
 
     return (
         <HeaderWrapper
@@ -33,82 +27,117 @@ const UserVerification: React.FC = () => {
         >
             <div className="min-h-screen">
                 <div className="max-w-7xl mx-auto">
-                    <div className="bg-red-900 rounded-3xl overflow-hidden">
-                        <div className="grid grid-cols-[300px_1fr_400px] gap-6 p-8">
-                            {/* Left Section - Profile Info */}
-                            <div className="text-center">
-                                <div className="relative inline-block">
-                                    <img
-                                        src="https://randomuser.me/api/portraits/men/1.jpg"
-                                        alt={businessData.businessName}
-                                        className="w-32 h-32 rounded-full mx-auto mb-4"
-                                    />
-                                    {businessData.status === 'approved' ? (
-                                        <CheckCircle2 className="w-6 h-6 text-green-500 absolute bottom-4 right-0" />
-                                    ) : (
-                                        <X className="w-6 h-6 text-red-500 absolute bottom-4 right-0" />
-                                    )}
-                                </div>
-                                <h2 className="text-2xl font-bold text-white mb-1">
-                                    {businessData.businessName}
-                                </h2>
-                                <p className="text-red-200 mb-4">{businessData.category}</p>
-                                <p className="text-red-300 text-sm mb-6">
-                                    {businessData.status}
-                                </p>
-                                <button
-                                    onClick={handleEdit}
-                                    className="bg-white text-red-600 px-8 py-2 rounded-full font-semibold hover:bg-red-50 transition-colors"
-                                >
-                                    View
-                                </button>
-                            </div>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-24">
+                            <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+                        </div>
+                    ) : !verification ? (
+                        <div className="bg-red-900 rounded-3xl p-12 text-center">
+                            <p className="text-red-200 text-lg">No verification record found for this user.</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="bg-red-900 rounded-3xl overflow-hidden">
+                                <div className="grid grid-cols-[300px_1fr_400px] gap-6 p-8">
+                                    {/* Left Section - Profile Info */}
+                                    <div className="text-center">
+                                        <div className="relative inline-block">
+                                            <img
+                                                src={
+                                                    verification.profilePicture
+                                                        ? `${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.profilePicture}`
+                                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(verification.userName)}&background=random`
+                                                }
+                                                alt={verification.userName}
+                                                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
+                                            />
+                                            {verification.status === 'approved' ? (
+                                                <CheckCircle2 className="w-6 h-6 text-green-500 absolute bottom-4 right-0" />
+                                            ) : (
+                                                <X className="w-6 h-6 text-red-500 absolute bottom-4 right-0" />
+                                            )}
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-white mb-1">
+                                            {verification.businessName}
+                                        </h2>
+                                        <p className="text-red-200 mb-4">{verification.category}</p>
+                                        <p className="text-red-300 text-sm mb-6 capitalize">
+                                            {verification.status}
+                                        </p>
+                                        <button
+                                            onClick={() => setIsEditModal(true)}
+                                            className="bg-white text-red-600 px-8 py-2 rounded-full font-semibold hover:bg-red-50 transition-colors"
+                                        >
+                                            View
+                                        </button>
+                                    </div>
 
-                            {/* Middle Section - Business Info */}
-                            <div className="space-y-6">
-                                <div>
-                                    <p className="text-red-200 text-sm">Business Name</p>
-                                    <p className="text-white font-semibold">{businessData.businessName}</p>
-                                </div>
-                                <div>
-                                    <p className="text-red-200 text-sm">Business Category</p>
-                                    <p className="text-white font-semibold">{businessData.category}</p>
-                                </div>
-                                <div>
-                                    <p className="text-red-200 text-sm">Business Email</p>
-                                    <p className="text-white font-semibold">{businessData.email}</p>
-                                </div>
-                                <div>
-                                    <p className="text-red-200 text-sm">Phone no</p>
-                                    <p className="text-white font-semibold">{businessData.phone}</p>
-                                </div>
-                            </div>
+                                    {/* Middle Section - Business Info */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <p className="text-red-200 text-sm">Business Name</p>
+                                            <p className="text-white font-semibold">{verification.businessName}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-red-200 text-sm">Business Category</p>
+                                            <p className="text-white font-semibold">{verification.category}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-red-200 text-sm">Business Email</p>
+                                            <p className="text-white font-semibold">
+                                                {verification.businessEmail || verification.userEmail || '—'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-red-200 text-sm">Phone no</p>
+                                            <p className="text-white font-semibold">
+                                                {verification.businessPhone || verification.userPhone || '—'}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                            {/* Right Section - Additional Info */}
-                            <div className="space-y-6">
-                                <div>
-                                    <p className="text-red-200 text-sm">Certificate Image</p>
-                                    <div className="mt-2 bg-white rounded-lg p-4 w-full">
-                                        <img
-                                            src={businessData.document}
-                                            alt="Certificate"
-                                            className="w-20 h-auto rounded block mx-auto"
-                                        />
+                                    {/* Right Section - Certificate */}
+                                    <div className="space-y-6">
+                                        <div>
+                                            <p className="text-red-200 text-sm">Certificate Image</p>
+                                            <div className="mt-2 bg-white rounded-lg p-4 w-full">
+                                                {verification.photo ? (
+                                                    <img
+                                                        src={`${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.photo}`}
+                                                        alt="Certificate"
+                                                        className="w-20 h-auto rounded block mx-auto"
+                                                    />
+                                                ) : (
+                                                    <p className="text-gray-400 text-sm text-center">No certificate uploaded</p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <VerifyModal
-                        isOpen={isEditModal}
-                        onClose={() => setIsEditModal(false)}
-                        business={businessData}
-                    />
+                            <VerifyModal
+                                isOpen={isEditModal}
+                                onClose={() => setIsEditModal(false)}
+                                onSuccess={() => { setIsEditModal(false); refetch(); }}
+                                business={{
+                                    id: verification.id,
+                                    businessName: verification.businessName,
+                                    category: verification.category,
+                                    email: verification.businessEmail || verification.userEmail,
+                                    phone: verification.businessPhone || verification.userPhone,
+                                    document: verification.photo
+                                        ? `${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.photo}`
+                                        : '',
+                                    status: verification.status,
+                                }}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         </HeaderWrapper>
     );
-}
+};
 
 export default UserVerification;

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Horizontal from '../../components/alignments/Horizontal';
-import { revenueStats, TransactionFilter, UserTransactionData } from '../../constants/Data';
+import { TransactionFilter } from '../../constants/Data';
 import StatsCard from '../../components/StatsCard';
 import FilterTab from '../../components/FilterTab';
 import Vertical from '../../components/alignments/Vertical';
@@ -10,11 +10,18 @@ import { bulkFilter, dates } from '../../constants/FiltersData';
 import SearchFilter from '../../components/SearchFilter';
 import TableCan from '../../components/TableCan';
 import TransactionRow from './components/TransactionRow';
+import StatsCardSkeleton from '../../components/StatsCardSkeleton';
+import TableSkeleton from '../../components/TableSkeleton';
+import { useGetAllTransactions, useGetTransactionStats } from '../../utils/queries/transactionQueries';
+import images from '../../constants/images';
 
 const Transaction: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [transactionStatus, setTransactionStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useGetAllTransactions();
+  const { data: stats, isLoading: statsLoading } = useGetTransactionStats();
 
   const tabs = [
     { name: 'all', value: 'all' },
@@ -22,23 +29,81 @@ const Transaction: React.FC = () => {
     { name: 'withdrawal', value: 'withdrawal' },
   ];
 
-  // 👉 filter logic applied here
   const filteredData = useMemo(() => {
-    return UserTransactionData.filter((item) => {
+    if (!transactions || !Array.isArray(transactions)) return [];
+    return transactions.filter((item) => {
       const matchesTab = activeTab === 'all' || item.type === activeTab;
       const matchesStatus = transactionStatus === 'all' || item.status === transactionStatus;
-      const matchesSearch = searchQuery === '' || item.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = searchQuery === '' || item.id?.toString().toLowerCase().includes(searchQuery.toLowerCase());
 
       return matchesTab && matchesStatus && matchesSearch;
     });
-  }, [activeTab, transactionStatus, searchQuery]);
+  }, [transactions, activeTab, transactionStatus, searchQuery]);
+
+  const revenueStats = stats ? [
+    {
+      icon: images.revenue,
+      heading: 'Total',
+      subHeading: 'Revenue',
+      IconColor: '#FF0000',
+      value: stats.totalRevenue || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.revenue,
+      heading: 'Total',
+      subHeading: 'Deposits',
+      IconColor: '#008000',
+      value: stats.totalDeposits || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.revenue,
+      heading: 'Total',
+      subHeading: 'Withdrawals',
+      IconColor: '#FFA500',
+      value: stats.totalWithdrawals || 0,
+      changeStatus: 'down',
+      subDetail: []
+    },
+    {
+      icon: images.revenue,
+      heading: 'Pending',
+      subHeading: 'Transactions',
+      IconColor: '#0000FF',
+      value: stats.pendingTransactions || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+    {
+      icon: images.revenue,
+      heading: 'Total',
+      subHeading: 'Transactions',
+      IconColor: '#800080',
+      value: stats.totalTransactions || 0,
+      changeStatus: 'up',
+      subDetail: []
+    },
+  ] : [];
 
   return (
     <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {revenueStats.map((item, index) => (
-          <StatsCard {...item} key={index} />
-        ))}
+        {statsLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          revenueStats.map((item, index) => (
+            <StatsCard {...item} key={index} />
+          ))
+        )}
       </div>
 
       <FilterTab
@@ -73,11 +138,19 @@ const Transaction: React.FC = () => {
         />
       </Vertical>
 
-      <TableCan
-        TrName={TransactionRow}
-        dataTr={filteredData}
-        headerTr={['Name','transaction id', 'amount', 'status', 'date', 'actions']}
-      />
+      {transactionsLoading ? (
+        <TableSkeleton rows={10} columns={6} />
+      ) : transactionsError ? (
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          Error loading transactions. Please try again.
+        </div>
+      ) : (
+        <TableCan
+          TrName={TransactionRow}
+          dataTr={filteredData}
+          headerTr={['Name','transaction id', 'amount', 'status', 'date', 'actions']}
+        />
+      )}
     </Horizontal>
   );
 };

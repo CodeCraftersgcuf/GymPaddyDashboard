@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, ChevronLeft } from 'lucide-react';
-import { dummyImage } from '../../../../../constants/help';
+import { avatarUrl } from '../../../../../constants/help';
 
 interface StatisticsModalProps {
   data: any;
@@ -28,7 +28,7 @@ const StatisticsModal: React.FC<StatisticsModalProps> = ({ data, onClose, onBack
 
           <div className="p-6">
             <div className="flex items-center gap-4 mb-8">
-              <img src={data.userImage || dummyImage()} alt="User" className="w-10 h-10 rounded-full" />
+              <img src={avatarUrl(data.userImage, data.userName)} alt="User" className="w-10 h-10 rounded-full" />
               <div>
                 <h3 className="font-medium">{data.userName || 'User'}</h3>
                 <p className="text-sm text-gray-500">{data.location || 'Location'} • {data.timeAgo || 'Time'}</p>

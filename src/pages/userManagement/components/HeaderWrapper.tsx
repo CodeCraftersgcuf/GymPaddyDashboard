@@ -13,16 +13,17 @@ interface props {
 
 const HeaderWrapper: React.FC<props> = ({ children, activeTab, setActiveTab, user, location }) => {
     const navigate = useNavigate()
-    const [dynamicTab, setdynamicTab] = useState(`user/management/profile/${user}`);
+    const safeUser = user && user !== 'undefined' && user !== 'null' ? user : '';
+    const [dynamicTab, setdynamicTab] = useState(`/user/management/profile/${safeUser}`);
     const tabs = [
-        { id: `/user/management/profile/${user}`, label: 'Activity', image: images.user },
-        { id: `/user/management/${user}/social`, label: 'Socials', image: images.social },
-        // { id: `/user/management/${user}/connect`, label: 'gym', image: images.love },
-        { id: `/user/management/${user}/market`, label: 'Market', image: images.market },
-        // { id: `/user/management/${user}/gymhub`, label: 'GymHub', image: images.gym },
-        { id: `/user/management/${user}/transactions`, label: 'Transactions', image: images.transaction },
-        { id: `/user/management/${user}/verifications`, label: 'Verifications', image: images.verification },
-        { id: `/user/management/${user}/chat`, label: 'Chat', image: images.support },
+        { id: `/user/management/profile/${safeUser}`, label: 'Activity', image: images.user },
+        { id: `/user/management/${safeUser}/social`, label: 'Socials', image: images.social },
+        // { id: `/user/management/${safeUser}/connect`, label: 'gym', image: images.love },
+        { id: `/user/management/${safeUser}/market`, label: 'Market', image: images.market },
+        // { id: `/user/management/${safeUser}/gymhub`, label: 'GymHub', image: images.gym },
+        { id: `/user/management/${safeUser}/transactions`, label: 'Transactions', image: images.transaction },
+        { id: `/user/management/${safeUser}/verifications`, label: 'Verifications', image: images.verification },
+        { id: `/user/management/${safeUser}/chat`, label: 'Chat', image: images.support },
     ];
     useEffect(() => {
         const currentTab = tabs.find((tab) => tab.id === location.pathname);

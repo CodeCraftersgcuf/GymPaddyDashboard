@@ -7,10 +7,10 @@ import ItemAlign from '../../components/alignments/ItemAlign'
 import Dropdown from '../../components/Dropdown'
 import { dates, notificationStatus } from '../../constants/FiltersData'
 import NotificationCard from './Components/NotificationCard'
-import { allnotification } from '../../constants/Data'
 import NotificationModal from './Components/NotificationModal'
+import LoadingSpinner from '../../components/LoadingSpinner'
+import { useGetAllNotifications } from '../../utils/queries/notificationQueries'
 
-// Utility to convert human-readable time to Date
 const parseTimeAgo = (time: string): Date => {
     const now = new Date()
     const lower = time.toLowerCase()
@@ -33,12 +33,14 @@ const parseTimeAgo = (time: string): Date => {
 
 const Notification: React.FC = () => {
     const [IsModelOpen, setIsModelOpen] = useState(false)
+    const { data: notifications, isLoading, error } = useGetAllNotifications()
+
     const tabs = [
         { name: 'all', value: 'all' },
         { name: 'socials', value: 'socials' },
         { name: 'connect', value: 'connect' },
         { name: 'market', value: 'market' },
-        { name: 'gym hub', value: 'gym' } // match value to actual type
+        { name: 'gym hub', value: 'gym' }
     ]
 
     const [activeTab, setActiveTab] = useState<string>('all')
@@ -57,13 +59,13 @@ const Notification: React.FC = () => {
         setSelectedStatus(value)
     }
 
-    // Filtered notifications using useMemo for performance
     const filteredNotifications = useMemo(() => {
-        return allnotification.filter((item) => {
+        if (!notifications) return [];
+        return notifications.filter((item) => {
             const matchesTab = activeTab === 'all' || item.type === activeTab
             const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus
 
-            const notificationDate = parseTimeAgo(item.time)
+            const notificationDate = item.created_at ? new Date(item.created_at) : parseTimeAgo(item.time || 'just now')
             const now = new Date()
             const daysDifference = (now.getTime() - notificationDate.getTime()) / (1000 * 60 * 60 * 24)
 
@@ -72,7 +74,7 @@ const Notification: React.FC = () => {
 
             return matchesTab && matchesStatus && matchesDate
         })
-    }, [activeTab, selectedDate, selectedStatus])
+    }, [notifications, activeTab, selectedDate, selectedStatus])
 
     return (
         <Horizontal>
@@ -100,17 +102,25 @@ const Notification: React.FC = () => {
                 />
             </ItemAlign>
 
-            <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
-                {
-                    filteredNotifications.length > 0 ? (
-                        filteredNotifications.map((notificationItem, index) => (
-                            <NotificationCard key={index} {...notificationItem} />
-                        ))
-                    ) : (
-                        <div className="col-span-3 text-center text-gray-500">No notifications found.</div>
-                    )
-                }
-            </div>
+            {isLoading ? (
+                <LoadingSpinner className="h-64" />
+            ) : error ? (
+                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    Error loading notifications. Please try again.
+                </div>
+            ) : (
+                <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+                    {
+                        filteredNotifications.length > 0 ? (
+                            filteredNotifications.map((notificationItem, index) => (
+                                <NotificationCard key={index} {...notificationItem} />
+                            ))
+                        ) : (
+                            <div className="col-span-3 text-center text-gray-500">No notifications found.</div>
+                        )
+                    }
+                </div>
+            )}
 
             <NotificationModal
                 isOpen={IsModelOpen}

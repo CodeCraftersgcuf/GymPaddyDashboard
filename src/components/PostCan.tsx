@@ -1,6 +1,6 @@
 import React from 'react'
 import images from '../constants/images'
-import { dummyImage } from '../constants/help';
+import { avatarUrl } from '../constants/help';
 
 interface props {
     profile_picture?:string;
@@ -15,7 +15,7 @@ const PostCan:React.FC<props> = ({
 }) => {
   return (
     <div className='flex gap-4 p-2'>
-        <img src={dummyImage() || profile_picture} alt="name" className='w-14 h-14 rounded-md object-contain' />
+        <img src={avatarUrl(profile_picture)} alt="name" className='w-14 h-14 rounded-md object-contain' />
         <div className='flex flex-col justify-between flex-[1]'>
             <h1 className='text-sm'>{Description.slice(0,40)} {Description.length > 40 && '...'}</h1>
             <span className='text-black/50 text-sm text-end w-full block'>{time}</span>

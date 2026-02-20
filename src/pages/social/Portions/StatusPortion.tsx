@@ -16,9 +16,14 @@ interface props {
 const StatusPortion: React.FC<props> = ({ data }) => {
     console.log(data);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState<any[]>([]);
 
     useEffect(() => {
+        if (!data || !Array.isArray(data)) {
+            setFilteredData([]);
+            return;
+        }
+        
         let temp = [...data];
 
         // Search filter
@@ -29,7 +34,7 @@ const StatusPortion: React.FC<props> = ({ data }) => {
         }
 
         setFilteredData(temp);
-    }, [searchQuery]);
+    }, [data, searchQuery]);
     console.log("Filter data",filteredData)
 
     return (

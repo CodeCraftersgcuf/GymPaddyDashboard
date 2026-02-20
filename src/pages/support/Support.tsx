@@ -6,15 +6,20 @@ import ItemAlign from "../../components/alignments/ItemAlign";
 import Dropdown from "../../components/Dropdown";
 import { dates, notificationStatus } from "../../constants/FiltersData";
 import TableCan from "../../components/TableCan";
-import { supportTickets } from "../../constants/Data";
 import SupportRow from "./components/SupportRow";
+import TableSkeleton from "../../components/TableSkeleton";
+import { useGetAllTickets } from "../../utils/queries/supportQueries";
+
 const getDaysDifference = (dateStr: string) => {
   const now = new Date();
   const givenDate = new Date(dateStr);
   const diff = now.getTime() - givenDate.getTime();
   return diff / (1000 * 60 * 60 * 24);
 };
+
 const Support: React.FC = () => {
+  const { data: tickets, isLoading: ticketsLoading, error: ticketsError } = useGetAllTickets();
+
   const tabs = [
     { name: 'all', value: 'all' },
     { name: 'socials', value: 'socials' },
@@ -40,8 +45,9 @@ const Support: React.FC = () => {
   }
 
   const filteredData = useMemo(() => {
-    return supportTickets.filter((ticket) => {
-      const tabMatch = activeTab === "all" || ticket.type == activeTab;
+    if (!tickets) return [];
+    return tickets.filter((ticket) => {
+      const tabMatch = activeTab === "all" || ticket.subject?.toLowerCase().includes(activeTab);
       const statusMatch = selectedStatus === "all" || ticket.status === selectedStatus;
 
       const daysLimit = selectedDate === "today" ? 1 : parseInt(selectedDate);
@@ -49,10 +55,7 @@ const Support: React.FC = () => {
 
       return tabMatch && statusMatch && dateMatch;
     });
-  }, [activeTab, selectedDate, selectedStatus]);
-  console.log(filteredData)
-  console.log(supportTickets)
-
+  }, [tickets, activeTab, selectedDate, selectedStatus]);
 
   return (
     <Horizontal>
@@ -78,13 +81,20 @@ const Support: React.FC = () => {
           position="left-0"
         />
       </ItemAlign>
-      <TableCan
-        headerTr={['name', 'message', 'status', 'Date', 'actions']}
-        // filteredData
-        dataTr={filteredData}
-        TrName={SupportRow}
-      />
 
+      {ticketsLoading ? (
+        <TableSkeleton rows={10} columns={5} />
+      ) : ticketsError ? (
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          Error loading support tickets. Please try again.
+        </div>
+      ) : (
+        <TableCan
+          headerTr={['name', 'message', 'status', 'Date', 'actions']}
+          dataTr={filteredData}
+          TrName={SupportRow}
+        />
+      )}
     </Horizontal>
   )
 };

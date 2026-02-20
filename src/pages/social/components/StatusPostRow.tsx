@@ -3,7 +3,7 @@ import { AlertOctagonIcon, AlertTriangleIcon } from 'lucide-react';
 import MoreDropdown from '../../../components/MoreDropdown';
 import Modal from '../../../components/Modal';
 import StatusView from './StatusView';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 
 interface Props {
   displayData: {
@@ -35,7 +35,7 @@ const StatusPostRow: React.FC<Props> = ({ displayData }) => {
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
-              src={displayData.profile_picture || dummyImage()}
+              src={avatarUrl(displayData.profile_picture, displayData.fullName)}
               alt="profile"
               className="w-10 h-10 rounded-full"
             />

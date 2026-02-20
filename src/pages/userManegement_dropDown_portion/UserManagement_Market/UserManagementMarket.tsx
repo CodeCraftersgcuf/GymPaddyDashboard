@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { useramangement_Social_Statics, usersTable, userTableHeaders } from "../../../constants/Data";
+import { userTableHeaders } from "../../../constants/Data";
 import Horizontal from "../../../components/alignments/Horizontal";
 import StatsCard from "../../../components/StatsCard";
+import StatsCardSkeleton from "../../../components/StatsCardSkeleton";
+import TableSkeleton from "../../../components/TableSkeleton";
 import Vertical from "../../../components/alignments/Vertical";
 import ItemAlign from "../../../components/alignments/ItemAlign";
 import Dropdown from "../../../components/Dropdown";
@@ -11,75 +13,135 @@ import SearchFilter from "../../../components/SearchFilter";
 import TableCan from "../../../components/TableCan";
 import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
+import { useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
+import images from "../../../constants/images";
 
 const UserManagementMarket: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
-  const [modalOpen, setmodalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleBulkAction = (value: string) => {
-    console.log("Bulk action:", value);
-  };
-  const handleOnlineStatus = (value: string) => {
-    setStatusFilter(value);
-  };
+  const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
+  const { data: users, isLoading: usersLoading } = useGetAllUsers();
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query.toLowerCase());
-  };
+  const statCards = sectionStats
+    ? [
+        {
+          icon: images.user,
+          heading: "Total",
+          subHeading: "Users",
+          IconColor: "#8B0000",
+          value: sectionStats.totalUsers,
+          changeStatus: "up",
+          subDetail: [],
+        },
+        {
+          icon: images.social,
+          heading: "Social",
+          subHeading: "Users",
+          IconColor: "#FF0000",
+          value: sectionStats.socialUsers,
+          changeStatus: "up",
+          subDetail: [],
+        },
+        {
+          icon: images.love,
+          heading: "Connect",
+          subHeading: "Users",
+          IconColor: "#0000FF",
+          value: sectionStats.connectUsers,
+          changeStatus: "up",
+          subDetail: [],
+        },
+        {
+          icon: images.marketIcon,
+          heading: "Marketplace",
+          subHeading: "Users",
+          IconColor: "#008000",
+          value: sectionStats.marketplaceUsers,
+          changeStatus: "up",
+          subDetail: [],
+        },
+        {
+          icon: images.gym,
+          heading: "Gym Hub",
+          subHeading: "Users",
+          IconColor: "#800080",
+          value: sectionStats.gymHubUsers,
+          changeStatus: "up",
+          subDetail: [],
+        },
+      ]
+    : [];
 
   const filteredUsers = useMemo(() => {
-    return usersTable.filter((user) => {
+    if (!users) return [];
+    return users.filter((user) => {
       const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+      const q = searchQuery.toLowerCase();
       const matchesSearch =
-        user.fullName.toLowerCase().includes(searchQuery) ||
-        user.username.toLowerCase().includes(searchQuery) ||
-        user.email.toLowerCase().includes(searchQuery);
+        !q ||
+        user.fullName?.toLowerCase().includes(q) ||
+        user.username?.toLowerCase().includes(q) ||
+        user.email?.toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
-  }, [statusFilter, searchQuery]);
-  const handleSubmit = (values: any) => {
-    console.log("Form submitted with values:", values);
-    setmodalOpen(false);
-  }
+  }, [users, statusFilter, searchQuery]);
+
   return (
     <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {
-          useramangement_Social_Statics.map((item, index) => (
-            <StatsCard {...item} key={index} />
-          ))
-        }
+        {statsLoading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : (
+          statCards.map((item, index) => <StatsCard {...item} key={index} />)
+        )}
       </div>
-        <h1 className="text-2xl font-medium">Market Users</h1>
+
+      <h1 className="text-2xl font-medium">Market Users</h1>
+
       <Vertical>
         <ItemAlign>
           <Dropdown
             options={UserActiveStatus}
-            onChange={handleOnlineStatus}
+            onChange={(val) => setStatusFilter(val)}
             placeholder="Status"
             position="left-0"
           />
           <Dropdown
             options={bulkFilter}
-            onChange={handleBulkAction}
+            onChange={(val) => console.log("Bulk:", val)}
             placeholder="Bulk Actions"
             position="left-0"
           />
         </ItemAlign>
-
         <ItemAlign>
-          <Button handleFunction={() => setmodalOpen(true)}>Add New User</Button>
-          <SearchFilter handleFunction={handleSearch} />
+          <Button handleFunction={() => setModalOpen(true)}>Add New User</Button>
+          <SearchFilter handleFunction={(val) => setSearchQuery(val)} />
         </ItemAlign>
-
       </Vertical>
-      <TableCan
-        headerTr={userTableHeaders}
-        dataTr={filteredUsers}
-        TrName={UserRow}
+
+      {usersLoading ? (
+        <TableSkeleton rows={10} columns={7} />
+      ) : (
+        <TableCan
+          headerTr={userTableHeaders}
+          dataTr={filteredUsers}
+          TrName={UserRow}
+        />
+      )}
+
+      <UserFormModal
+        onSubmit={(values) => { console.log("Form submitted:", values); setModalOpen(false); }}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
       />
-      <UserFormModal onSubmit={handleSubmit} isOpen={modalOpen} onClose={() => setmodalOpen(false)} />
     </Horizontal>
   );
 };

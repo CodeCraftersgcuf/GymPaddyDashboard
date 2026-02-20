@@ -5,10 +5,10 @@ interface TransactionDetailsProps {
   transaction: {
     id: string;
     amount: string;
-    status: 'success' | 'failed' | 'pending';
-    type: 'topup' | 'withdrawal';
+    status: 'completed' | 'failed' | 'pending' | string;
+    type: 'topup' | 'withdrawal' | string;
     date: string;
-    description?: string;
+    description?: string | null;
     accountDetails?: {
       accountName: string;
       accountNumber: string;
@@ -24,7 +24,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 }) => {
   const getStatusIcon = () => {
     switch (transaction.status) {
-      case 'success':
+      case 'completed':
         return (
           <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center">
             <Check className="w-8 h-8 text-white" />
@@ -39,6 +39,12 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
       case 'pending':
         return (
           <div className="bg-yellow-400 w-16 h-16 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-white" />
+          </div>
+        );
+      default:
+        return (
+          <div className="bg-gray-400 w-16 h-16 rounded-full flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-white" />
           </div>
         );

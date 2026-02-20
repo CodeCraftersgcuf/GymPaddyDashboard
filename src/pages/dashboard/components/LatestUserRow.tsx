@@ -1,5 +1,5 @@
 import React from 'react'
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 
 interface UserRowProps {
     displayData: {
@@ -26,7 +26,7 @@ const LatestUserRow: React.FC<props> = ({ displayData }) => {
             <td className="p-2 py-4">
                 <div className="flex items-center gap-2">
                     <img
-                        src={displayData.profileImage || dummyImage()}
+                        src={avatarUrl(displayData.profileImage, displayData.fullName)}
                         alt=""
                         className="w-10 h-10 rounded-full"
                     />

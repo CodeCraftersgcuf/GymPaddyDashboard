@@ -5,7 +5,7 @@ import Modal from '../../../components/Modal';
 import LiveView from './LiveView';
 import LiveStats from './LiveStats';
 import AudienceList from './AudienceList';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 
 interface Props {
   displayData: {
@@ -69,7 +69,7 @@ const LivePostRow: React.FC<Props> = ({ displayData }) => {
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
-              src={displayData.profile_picture || dummyImage()}
+              src={avatarUrl(displayData.profile_picture, displayData.fullName)}
               alt="profile"
               className="w-10 h-10 rounded-full"
             />

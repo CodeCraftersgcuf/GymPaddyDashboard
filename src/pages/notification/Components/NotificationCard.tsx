@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageSquare, Heart, Store, Dumbbell } from 'lucide-react';
 import type { NotificationProps } from '../../../constants/Data';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 
 const NotificationCard: React.FC<NotificationProps> = ({
   user,
@@ -45,15 +45,15 @@ const NotificationCard: React.FC<NotificationProps> = ({
     <div className="bg-white rounded-xl shadow-sm p-4 w-full h-full hover:shadow-md transition-shadow border border-gray-200 flex flex-col justify-between">
       <div className="flex items-start justify-between gap-4">
         <img
-          src={user.profile_picture || dummyImage()}
-          alt={user.username}
+          src={avatarUrl(user?.profile_picture, user?.username)}
+          alt={user?.username || 'User'}
           className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
         />
         <div className="flex-1">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-900">{user.username}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{user?.username || 'Unknown User'}</h3>
                 <div className={`px-2 py-1 rounded-full ${getTypeColor()} flex items-center gap-1`}>
                   {getTypeIcon()}
                   <span className="text-xs font-medium capitalize">{type}</span>

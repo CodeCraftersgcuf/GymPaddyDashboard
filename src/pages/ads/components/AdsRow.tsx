@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import ListingDetailsModal from './ListingDetailsModal';
 import AdStatsModal from './AdStatsModal';
 import Button from '../../../components/Buttons/Button';
+import { avatarUrl } from '../../../constants/help';
 
 interface AdsRowProps {
   displayData: {
     id: number;
-    image: string;
+    image?: string | null;
     name: string;
+    userImage?: string | null;
+    location?: string;
     title: string;
     price: string;
     duration: string;
@@ -38,7 +41,7 @@ const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
         <td className="p-4">
           <div className="flex items-center gap-2">
             <img
-              src={displayData.image}
+              src={avatarUrl(displayData.image ?? displayData.userImage, displayData.name)}
               alt="profile"
               className="w-10 h-10 rounded-full object-cover"
             />

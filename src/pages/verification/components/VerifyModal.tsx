@@ -3,11 +3,14 @@ import { ChevronDown } from 'lucide-react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import Modal from '../../../components/Modal';
+import { useApproveVerification, useRejectVerification } from '../../../utils/mutations/verificationMutations';
 
 interface BusinessModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   business: {
+    id: string;
     businessName: string;
     category: string;
     email: string;
@@ -31,7 +34,6 @@ const validationSchema = Yup.object().shape({
   category: Yup.string().required('Category is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   phone: Yup.string().required('Phone number is required'),
-  document: Yup.string().required('Document is required'),
   status: Yup.string().required('Status is required'),
   rejectionReason: Yup.string().when('status', {
     is: 'rejected',
@@ -40,10 +42,32 @@ const validationSchema = Yup.object().shape({
   }),
 });
 
-const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }) => {
+const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, onSuccess, business }) => {
   const [selectedStatus, setSelectedStatus] = useState(business.status);
 
+  const approveMutation = useApproveVerification();
+  const rejectMutation = useRejectVerification();
+
+  const isSubmitting = approveMutation.isPending || rejectMutation.isPending;
+
   if (!isOpen) return null;
+
+  const handleSubmit = async (values: { status: string; rejectionReason: string }) => {
+    try {
+      if (values.status === 'approved') {
+        await approveMutation.mutateAsync({ id: business.id });
+      } else if (values.status === 'rejected') {
+        await rejectMutation.mutateAsync({
+          id: business.id,
+          data: { reason: values.rejectionReason },
+        });
+      }
+      onSuccess?.();
+      onClose();
+    } catch {
+      // errors are already logged by apiCall
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -58,10 +82,7 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
           rejectionReason: '',
         }}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
-          console.log('Form values:', values);
-          onClose();
-        }}
+        onSubmit={handleSubmit}
       >
         {({ setFieldValue, errors, touched }) => (
           <Form className="p-6 space-y-6">
@@ -72,7 +93,8 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
                   name="businessName"
                   type="text"
                   placeholder="Business Name"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
                 {errors.businessName && touched.businessName && (
                   <div className="text-red-500 text-sm mt-1">{errors.businessName}</div>
@@ -84,7 +106,8 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
                 <Field
                   as="select"
                   name="category"
-                  className="w-full  px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
                 >
                   <option value="">Select Category</option>
                   {categories.map((cat) => (
@@ -105,7 +128,8 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
                   name="email"
                   type="email"
                   placeholder="Email"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
                 {errors.email && touched.email && (
                   <div className="text-red-500 text-sm mt-1">{errors.email}</div>
@@ -118,33 +142,27 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
                   name="phone"
                   type="text"
                   placeholder="Phone"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
                 {errors.phone && touched.phone && (
                   <div className="text-red-500 text-sm mt-1">{errors.phone}</div>
                 )}
               </div>
 
-              {/* Document (Image or Preview link) */}
-              <div>
-                <Field
-                  name="document"
-                  type="text"
-                  disabled
-                  placeholder="Document"
-                  className="w-full hidden px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 cursor-not-allowed"
-                />
-                {errors.document && touched.document && (
-                  <div className="text-red-500 text-sm mt-1">{errors.document}</div>
-                )}
-                <div className="mt-2 border border-gray-300 py-4">
-                  <img
-                    src={business.document}
-                    alt="Uploaded document"
-                    className="max-h-32 mx-auto rounded"
-                  />
+              {/* Certificate document preview */}
+              {business.document && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Certificate</p>
+                  <div className="mt-2 border border-gray-300 py-4 rounded-lg">
+                    <img
+                      src={business.document}
+                      alt="Uploaded document"
+                      className="max-h-32 mx-auto rounded"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Status */}
               <div className="relative">
@@ -186,9 +204,10 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, business }
             {/* Save Button */}
             <button
               type="submit"
-              className="w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors"
+              disabled={isSubmitting || selectedStatus === 'pending'}
+              className="w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Save
+              {isSubmitting ? 'Saving...' : 'Save'}
             </button>
           </Form>
         )}

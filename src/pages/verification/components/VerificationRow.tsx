@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 import VerifyModal from './VerifyModal';
 
 interface BusinessRowProps {
@@ -36,7 +36,7 @@ const VerificationRow: React.FC<BusinessRowProps> = ({ displayData }) => {
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
-              src={dummyImage()}
+              src={avatarUrl(displayData.user.profile_picture, displayData.user.username)}
               alt=""
               className="w-10 h-10 rounded-full"
             />

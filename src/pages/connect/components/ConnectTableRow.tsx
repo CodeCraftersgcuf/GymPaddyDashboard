@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertOctagonIcon, AlertTriangleIcon } from 'lucide-react';
 import MoreDropdown from '../../../components/MoreDropdown';
-import { dummyImage } from '../../../constants/help';
+import { avatarUrl } from '../../../constants/help';
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -25,7 +25,7 @@ const ConnectTableRow: React.FC<Props> = ({ displayData }) => {
       </td>
       <td className="p-4 flex items-center gap-2">
         <img
-          src={displayData.profile_picture || dummyImage()}
+          src={avatarUrl(displayData.profile_picture, displayData.fullName)}
           alt="profile"
           className="w-10 h-10 rounded-full"
         />

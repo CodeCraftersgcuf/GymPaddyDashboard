@@ -1,10 +1,12 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { avatarUrl } from '../../../constants/help';
 
 interface ListingDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: {
+    image?: string | null;
     title: string;
     price: string;
     description: string;
@@ -37,11 +39,17 @@ const ListingDetailsModal: React.FC<ListingDetailsModalProps> = ({
           </div>
 
           <div className="p-4">
-            <img
-              src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-              alt="Product"
-              className="w-full h-48 object-cover rounded-lg mb-4"
-            />
+            {data.image ? (
+              <img
+                src={data.image}
+                alt="Product"
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
+            ) : (
+              <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-gray-400 text-sm">
+                No image available
+              </div>
+            )}
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">

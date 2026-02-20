@@ -18,9 +18,14 @@ const PostPortion: React.FC<props> = ({ data }) => {
     const [boosted, setBoosted] = useState('all');
     const [type, setType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState<any[]>([]);
 
     useEffect(() => {
+        if (!data || !Array.isArray(data)) {
+            setFilteredData([]);
+            return;
+        }
+        
         let temp = [...data];
 
         // Boosted filter
@@ -43,7 +48,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
         }
 
         setFilteredData(temp);
-    }, [boosted, type, searchQuery]);
+    }, [data, boosted, type, searchQuery]);
 
     return (
         <Horizontal>

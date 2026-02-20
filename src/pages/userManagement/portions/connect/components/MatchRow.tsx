@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { dummyImage } from '../../../../../constants/help';
+import { avatarUrl } from '../../../../../constants/help';
 import MediaSlider from './MediaSlider'; 
 
 interface ReportImageRowProps {
@@ -24,7 +24,7 @@ const MatchRow: React.FC<ReportImageRowProps> = ({ displayData }) => {
         </td>
         <td className="p-4">
           <img
-            src={displayData.image || dummyImage()}
+            src={avatarUrl(displayData.image, displayData.name)}
             alt={displayData.name}
             className="w-10 h-10 rounded-full object-cover"
           />

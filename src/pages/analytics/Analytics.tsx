@@ -4,13 +4,30 @@ import FilterTab from '../../components/FilterTab'
 import { analyticsTab, dates } from '../../constants/FiltersData'
 import Dropdown from '../../components/Dropdown'
 import AllPortion from './Portion/AllPortion'
-import { AdsAnalytics, allAnalytic, RevenueAnalytics, Useranalytics } from '../../constants/Data'
 import UserPortion from './Portion/UserPortion'
 import RevenuePortion from './Portion/RevenuePortion'
 import AdsPortions from './Portion/AdsPortions'
+import LoadingSpinner from '../../components/LoadingSpinner'
+import { 
+  useGetOverallAnalytics, 
+  useGetUserAnalytics, 
+  useGetRevenueAnalytics, 
+  useGetAdsAnalytics 
+} from '../../utils/queries/analyticsQueries'
 
+const RenderComponent = (activeTab: string, data?: any, isLoading?: boolean, error?: any) => {
+  if (isLoading) {
+    return <LoadingSpinner className="h-64" />;
+  }
+  
+  if (error) {
+    return (
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        Error loading analytics data. Please try again.
+      </div>
+    );
+  }
 
-const RenderComponent = (activeTab: string, data?: any) => {
   switch (activeTab) {
     case 'all':
       return <AllPortion data={data} />;
@@ -27,23 +44,61 @@ const RenderComponent = (activeTab: string, data?: any) => {
 
 const Analytics: React.FC = () => {
   const [activeTab, setactiveTab] = useState('all');
+  
+  const { data: overallData, isLoading: overallLoading, error: overallError } = useGetOverallAnalytics();
+  const { data: userData, isLoading: userLoading, error: userError } = useGetUserAnalytics();
+  const { data: revenueData, isLoading: revenueLoading, error: revenueError } = useGetRevenueAnalytics();
+  const { data: adsData, isLoading: adsLoading, error: adsError } = useGetAdsAnalytics();
+
   const handleDateFilter = (value: string) => {
     console.log(value)
   }
+
   const hanldeValues = (activeTab: string) => {
     switch (activeTab) {
       case 'all':
-        return allAnalytic;
+        return overallData;
       case 'UsersPortion':
-        return Useranalytics;
+        return userData;
       case 'RevenuePortion':
-        return RevenueAnalytics;
+        return revenueData;
       case 'AdsPortion':
-        return AdsAnalytics;
+        return adsData;
       default:
         return null;
     }
   }
+
+  const getLoadingState = (activeTab: string) => {
+    switch (activeTab) {
+      case 'all':
+        return overallLoading;
+      case 'UsersPortion':
+        return userLoading;
+      case 'RevenuePortion':
+        return revenueLoading;
+      case 'AdsPortion':
+        return adsLoading;
+      default:
+        return false;
+    }
+  }
+
+  const getErrorState = (activeTab: string) => {
+    switch (activeTab) {
+      case 'all':
+        return overallError;
+      case 'UsersPortion':
+        return userError;
+      case 'RevenuePortion':
+        return revenueError;
+      case 'AdsPortion':
+        return adsError;
+      default:
+        return null;
+    }
+  }
+
   return (
     <Horizontal>
       <FilterTab
@@ -57,7 +112,12 @@ const Analytics: React.FC = () => {
         placeholder="Bulk Actions"
         position="left-0"
       />
-      {RenderComponent(activeTab, hanldeValues(activeTab))}
+      {RenderComponent(
+        activeTab, 
+        hanldeValues(activeTab),
+        getLoadingState(activeTab),
+        getErrorState(activeTab)
+      )}
     </Horizontal>
   )
 }

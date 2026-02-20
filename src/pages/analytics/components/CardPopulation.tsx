@@ -8,6 +8,10 @@ interface props {
     data: displayData[]
 }
 const CardPopulation: React.FC<props> = ({data}) => {
+  if (!data || !Array.isArray(data)) {
+    return null;
+  }
+  
   return (
     <div className='grid grid-cols-1 lg:grid-cols-5 gap-4'>
         {
