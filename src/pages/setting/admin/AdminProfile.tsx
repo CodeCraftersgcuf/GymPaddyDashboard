@@ -1,107 +1,167 @@
 import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { avatarUrl } from '../../../constants/help'
 import Horizontal from '../../../components/alignments/Horizontal';
-import ItemAlign from '../../../components/alignments/ItemAlign';
-import Dropdown from '../../../components/Dropdown';
-import { bulkFilter, UserActiveStatus } from '../../../constants/FiltersData';
-import TableCan from '../../../components/TableCan';
-import UserProfileCan from '../../userManagement/components/UserProfileCan';
-import UserActivityRow from '../../userManagement/rows/UserActivityRow';
 import Modal from '../../../components/Modal';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import { useGetAllAdmins } from '../../../utils/queries/adminQueries';
+import { useUpdateAdmin } from '../../../utils/mutations/adminMutations';
+import { Loader2 } from 'lucide-react';
 
 const AdminProfile: React.FC = () => {
-    const [isEditModal, setisEditModal] = useState(false);
-    const { username } = useParams();
-    console.log(username)
-    const userData = {
-        fullName: 'Qamardeen Maleek',
-        username: 'Maleekfrenzy',
-        email: 'qamardeenoladimeji@gmail.com',
-        phoneNumber: '07033484845',
-        gender: 'M',
-        age: 24,
-        password: 'mypassword',
-        profilePicture: 'https://randomuser.me/api/portraits/men/1.jpg',
-        verified: false,
-        lastLogin: '01/01/25 - 06:22 AM',
-        dateRegistered: '01/01/25 - 06:22 AM',
+  const [isEditModal, setIsEditModal] = useState(false);
+  const { username } = useParams();
+
+  const { data: admins, isLoading } = useGetAllAdmins();
+  const updateMutation = useUpdateAdmin();
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const admin = admins?.find(a =>
+    a.fullName === username || a.id === username || a.email === username
+  );
+
+  const [editForm, setEditForm] = useState({ fullName: '', email: '', password: '' });
+
+  const handleEdit = () => {
+    if (admin) {
+      setEditForm({ fullName: admin.fullName, email: admin.email, password: '' });
     }
-    const handleEdit = () => {
-        setisEditModal(true);
+    setEditError(null);
+    setIsEditModal(true);
+  };
+
+  const handleSave = async () => {
+    if (!admin) return;
+    setEditError(null);
+    try {
+      const payload: any = {};
+      if (editForm.fullName && editForm.fullName !== admin.fullName) payload.fullName = editForm.fullName;
+      if (editForm.email && editForm.email !== admin.email) payload.email = editForm.email;
+      if (editForm.password) payload.password = editForm.password;
+
+      if (Object.keys(payload).length === 0) {
+        setIsEditModal(false);
+        return;
+      }
+
+      await updateMutation.mutateAsync({ id: admin.id, data: payload });
+      setIsEditModal(false);
+    } catch (err: any) {
+      setEditError(err?.response?.data?.message || err?.message || 'Failed to update admin.');
     }
-    const handleFilter = (values: any) => {
-        console.log(values);
-    }
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner className="h-64" />;
+  }
+
+  if (!admin) {
     return (
-        <Horizontal>
-            <UserProfileCan
-                onEdit={handleEdit}
-                userData={userData}
+      <Horizontal>
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          Admin not found. The admin "{username}" does not exist.
+        </div>
+      </Horizontal>
+    );
+  }
+
+  const profileImg = avatarUrl(admin.profile_picture, admin.fullName);
+
+  return (
+    <Horizontal>
+      <div className="bg-white rounded-xl shadow-md p-6 max-w-2xl">
+        <div className="flex items-center gap-6 mb-6">
+          <img
+            src={profileImg}
+            alt={admin.fullName}
+            className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+          />
+          <div>
+            <h1 className="text-2xl font-bold">{admin.fullName}</h1>
+            <p className="text-gray-500">{admin.email}</p>
+            <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+              {admin.status}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-0 border border-gray-200 rounded-lg">
+          <div className="flex justify-between p-4 border-b border-gray-200">
+            <span className="font-medium text-gray-500">Full Name</span>
+            <span>{admin.fullName}</span>
+          </div>
+          <div className="flex justify-between p-4 border-b border-gray-200">
+            <span className="font-medium text-gray-500">Email</span>
+            <span>{admin.email}</span>
+          </div>
+          <div className="flex justify-between p-4 border-b border-gray-200">
+            <span className="font-medium text-gray-500">Role</span>
+            <span className="capitalize">{admin.role}</span>
+          </div>
+          <div className="flex justify-between p-4 border-b border-gray-200">
+            <span className="font-medium text-gray-500">Date Registered</span>
+            <span>{admin.date || '—'}</span>
+          </div>
+          <div className="flex justify-between p-4">
+            <span className="font-medium text-gray-500">Last Login</span>
+            <span>{admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : '—'}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleEdit}
+          className="mt-6 bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition cursor-pointer"
+        >
+          Edit Admin
+        </button>
+      </div>
+
+      <Modal isOpen={isEditModal} onClose={() => setIsEditModal(false)} title="Edit Admin">
+        <div className="flex flex-col gap-4 p-4">
+          <div className="flex justify-center">
+            <img
+              src={profileImg}
+              alt={admin.fullName}
+              className="w-24 h-24 rounded-full object-cover"
             />
-            <h1 className='text-xl'>UserActivities</h1>
-            <ItemAlign>
-                <Dropdown
-                    options={UserActiveStatus}
-                    onChange={handleFilter}
-                    placeholder="Status"
-                    position="left-0"
-                />
-                <Dropdown
-                    options={bulkFilter}
-                    onChange={handleFilter}
-                    placeholder="Bulk Actions"
-                    position="left-0"
-                />
-            </ItemAlign>
+          </div>
+          <input
+            type="text"
+            placeholder="Full name"
+            value={editForm.fullName}
+            onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+            className="border p-2 border-gray-200 rounded"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={editForm.email}
+            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            className="border p-2 border-gray-200 rounded"
+          />
+          <input
+            type="password"
+            placeholder="New password (leave blank to keep current)"
+            value={editForm.password}
+            onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+            className="border p-2 border-gray-200 rounded"
+          />
 
-            <TableCan
-                dataTr={[{
-                    id: 1,
-                    activity: 'User Created a Post',
-                    created_at: Date.now()
-                }]}
-                headerTr={['activity', 'date']}
-                TrName={UserActivityRow}
-            />
+          {editError && (
+            <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{editError}</p>
+          )}
 
-            {/* {username} */}
-            <Modal
-                isOpen={isEditModal}
-                onClose={() => setisEditModal(false)}
-                title="Admin Profile"
-            >
-                <div className="flex flex-col gap-4 p-4">
-                    <label className="flex flex-col items-center justify-center">
-                        <img
-                            src={userData.profilePicture}
-                            alt="Avatar"
-                            className="w-24 h-24 rounded-full object-cover"
-                        />
-                        <input
-                            type="file"
-                            className="hidden"
-                            onChange={(e) => {
-                                if (e.target.files?.[0]) {
-                                    // handle new image preview if needed
-                                }
-                            }}
-                        />
-                    </label>
-                    <input type="text" value={userData.fullName} className="border p-2 border-gray-200 rounded" />
-                    <input type="email" value={userData.email} className="border p-2 border-gray-200 rounded" />
-                    <select value={userData.gender} className="border p-2 border-gray-200 rounded">
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
-                    </select>
-                    <input type="password" value={userData.password} className="border p-2 border-gray-200 rounded" />
-                    <button className="bg-red-500 text-white py-2 rounded hover:bg-red-600">
-                        Save
-                    </button>
-                </div>
-            </Modal>
-
-        </Horizontal>
-    )
+          <button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="bg-red-500 text-white py-2 rounded hover:bg-red-600 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+          >
+            {updateMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save'}
+          </button>
+        </div>
+      </Modal>
+    </Horizontal>
+  )
 }
 
 export default AdminProfile

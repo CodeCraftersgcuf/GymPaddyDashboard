@@ -14,7 +14,6 @@ interface props {
 }
 
 const PostPortion: React.FC<props> = ({ data }) => {
-    console.log(data);
     const [boosted, setBoosted] = useState('all');
     const [type, setType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -28,22 +27,22 @@ const PostPortion: React.FC<props> = ({ data }) => {
         
         let temp = [...data];
 
-        // Boosted filter
         if (boosted === 'boosted') {
             temp = temp.filter((item) => item.boostStatus?.toLowerCase() === 'yes');
         } else if (boosted === 'normal') {
             temp = temp.filter((item) => item.boostStatus?.toLowerCase() === 'no');
         }
 
-        // Type filter
         if (type !== 'all') {
             temp = temp.filter((item) => item.postType?.toLowerCase() === type);
         }
 
-        // Search filter
         if (searchQuery.trim() !== '') {
+            const q = searchQuery.toLowerCase();
             temp = temp.filter((item) =>
-                item.post.toLowerCase().includes(searchQuery.toLowerCase())
+                (item.post || '').toLowerCase().includes(q) ||
+                (item.fullName || '').toLowerCase().includes(q) ||
+                (item.username || '').toLowerCase().includes(q)
             );
         }
 

@@ -15,6 +15,7 @@ import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
 import { useGetUserStatsBySection } from "../../../utils/queries/userQueries";
 import { useGetAllUsers } from "../../../utils/queries/userQueries";
+import { useCreateUser } from "../../../utils/mutations/userMutations";
 import images from "../../../constants/images";
 
 const UserManagementSocial: React.FC = () => {
@@ -24,6 +25,7 @@ const UserManagementSocial: React.FC = () => {
 
   const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
   const { data: users, isLoading: usersLoading } = useGetAllUsers();
+  const createUserMutation = useCreateUser();
 
   const statCards = sectionStats
     ? [
@@ -90,8 +92,8 @@ const UserManagementSocial: React.FC = () => {
     });
   }, [users, statusFilter, searchQuery]);
 
-  const handleSubmit = (values: any) => {
-    console.log("Form submitted:", values);
+  const handleSubmit = async (values: any) => {
+    await createUserMutation.mutateAsync(values);
     setModalOpen(false);
   };
 

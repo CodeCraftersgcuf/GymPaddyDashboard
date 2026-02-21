@@ -17,12 +17,14 @@ import { useGetUserTransactions } from '../../../../utils/queries/transactionQue
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import StatsCardSkeleton from '../../../../components/StatsCardSkeleton';
 import images from '../../../../constants/images';
+import { getDateThreshold } from '../../../../constants/help';
 
 const UserTransaction: React.FC = () => {
   const location = useLocation();
   const { username } = useParams();
   const [activeTab, setActiveTab] = useState('all');
   const [transactionStatus, setTransactionStatus] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const { data: user, isLoading: userLoading } = useGetUserByUsername(username || '');
@@ -41,9 +43,18 @@ const UserTransaction: React.FC = () => {
       const matchesStatus = transactionStatus === 'all' || item.status === transactionStatus;
       const matchesSearch = searchQuery === '' || item.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesTab && matchesStatus && matchesSearch;
+      let matchesDate = true;
+      if (dateFilter !== 'all') {
+        const threshold = getDateThreshold(dateFilter);
+        if (threshold) {
+          const itemDate = item.date ? new Date(item.date) : null;
+          matchesDate = !!itemDate && itemDate >= threshold;
+        }
+      }
+
+      return matchesTab && matchesStatus && matchesSearch && matchesDate;
     });
-  }, [transactions, activeTab, transactionStatus, searchQuery]);
+  }, [transactions, activeTab, transactionStatus, dateFilter, searchQuery]);
   
   const walletStats = transactions ? [
     {
@@ -106,8 +117,8 @@ const UserTransaction: React.FC = () => {
         <Vertical>
           <ItemAlign>
             <Dropdown
-              options={dates}
-              onChange={(e) => console.log('Date:', e)}
+              options={[{ name: 'all', value: 'all' }, ...dates]}
+              onChange={(val) => setDateFilter(val)}
               placeholder="Dates"
               position="left-0"
             />

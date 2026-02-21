@@ -1,131 +1,129 @@
-import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import React, { useEffect, useState } from 'react';
 import Vertical from '../../components/alignments/Vertical';
 import { Link } from 'react-router-dom';
-
-interface CostConfig {
-  videoCallCost: string;
-  liveCost: string;
-  vipPlanCost: string;
-}
-
-const validationSchema = Yup.object().shape({
-  videoCallCost: Yup.number()
-    .typeError('Cost must be a number')
-    .required('Video call cost is required')
-    .min(0, 'Cost cannot be negative')
-    .max(999999, 'Cost is too high'),
-  liveCost: Yup.number()
-    .typeError('Cost must be a number')
-    .required('Live cost is required')
-    .min(0, 'Cost cannot be negative')
-    .max(999999, 'Cost is too high'),
-  vipPlanCost: Yup.number()
-    .typeError('Cost must be a number')
-    .required('VIP plan cost is required')
-    .min(0, 'Cost cannot be negative')
-    .max(999999, 'Cost is too high'),
-});
+import { useGetSettings } from '../../utils/queries/settingsQueries';
+import { useUpdateSettings } from '../../utils/mutations/settingsMutations';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { Loader2, CheckCircle } from 'lucide-react';
 
 const Setting: React.FC = () => {
-  const initialValues: CostConfig = {
-    videoCallCost: '',
-    liveCost: '',
-    vipPlanCost: '',
+  const { data: settings, isLoading } = useGetSettings();
+  const updateMutation = useUpdateSettings();
+
+  const [form, setForm] = useState({
+    video_call_cost: '',
+    live_cost: '',
+    vip_plan_cost: '',
+  });
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        video_call_cost: settings.video_call_cost || '0',
+        live_cost: settings.live_cost || '0',
+        vip_plan_cost: settings.vip_plan_cost || '0',
+      });
+    }
+  }, [settings]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaveError(null);
+    setSaveSuccess(false);
+    try {
+      await updateMutation.mutateAsync(form);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      setSaveError(err?.response?.data?.message || err?.message || 'Failed to save settings.');
+    }
   };
 
-  const handleSubmit = (values: CostConfig) => {
-    console.log('Form values:', values);
-    // Handle form submission here
-  };
+  if (isLoading) {
+    return <LoadingSpinner className="h-64" />;
+  }
 
   return (
     <>
       <Vertical>
-        <h1 className='text-2xl font-bold mb-4'>Settings</h1>
-        <Link to={'/settings/admin/management'} className='py-2 px-4 bg-[#FF0000] cursor-pointer text-white rounded-md'>
+        <h1 className="text-2xl font-bold mb-4">Settings</h1>
+        <Link
+          to="/settings/admin/management"
+          className="py-2 px-4 bg-[#FF0000] cursor-pointer text-white rounded-md w-fit"
+        >
           Admin Management
         </Link>
       </Vertical>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting }) => (
-          <Form className="max-w-full h-[80vh] p-6 bg-white space-y-6">
-            <div className='max-w-md'>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Video Call Cost
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Set cost per minute for video call
-              </p>
-              <Field
-                type="text"
-                name="videoCallCost"
-                placeholder="Enter cost"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <ErrorMessage
-                name="videoCallCost"
-                component="div"
-                className="mt-1 text-sm text-red-600"
-              />
-            </div>
+      <form onSubmit={handleSubmit} className="max-w-md p-6 bg-white space-y-6 mt-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Video Call Cost
+          </label>
+          <p className="text-xs text-gray-400 mb-2">Set cost per minute for video call</p>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.video_call_cost}
+            onChange={(e) => setForm({ ...form, video_call_cost: e.target.value })}
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-red-400"
+            placeholder="0.00"
+          />
+        </div>
 
-            <div className='max-w-md'>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Live Cost
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Set cost per minute for live
-              </p>
-              <Field
-                type="text"
-                name="liveCost"
-                placeholder="Enter cost"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <ErrorMessage
-                name="liveCost"
-                component="div"
-                className="mt-1 text-sm text-red-600"
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Live Cost
+          </label>
+          <p className="text-xs text-gray-400 mb-2">Set cost per minute for live</p>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.live_cost}
+            onChange={(e) => setForm({ ...form, live_cost: e.target.value })}
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-red-400"
+            placeholder="0.00"
+          />
+        </div>
 
-            <div className='max-w-md'>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                VIP Plan cost
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Set the cost for premium vip plan
-              </p>
-              <Field
-                type="text"
-                name="vipPlanCost"
-                placeholder="Enter cost"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <ErrorMessage
-                name="vipPlanCost"
-                component="div"
-                className="mt-1 text-sm text-red-600"
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            VIP Plan Cost
+          </label>
+          <p className="text-xs text-gray-400 mb-2">Set the cost for premium VIP plan</p>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.vip_plan_cost}
+            onChange={(e) => setForm({ ...form, vip_plan_cost: e.target.value })}
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-red-400"
+            placeholder="0.00"
+          />
+        </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="max-w-md w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Save
-            </button>
-          </Form>
+        {saveError && (
+          <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{saveError}</p>
         )}
-      </Formik>
+
+        {saveSuccess && (
+          <p className="text-green-600 text-sm bg-green-50 p-2 rounded flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" /> Settings saved successfully!
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={updateMutation.isPending}
+          className="w-full bg-red-500 text-white py-3 px-4 rounded-lg hover:bg-red-600 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+        >
+          {updateMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save'}
+        </button>
+      </form>
     </>
   );
 };

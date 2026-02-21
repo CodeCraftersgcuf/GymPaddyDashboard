@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { adsTableHeaders, marketTabs } from '../../constants/Data';
+import { adsTableHeaders } from '../../constants/Data';
 import Horizontal from '../../components/alignments/Horizontal';
 import StatsCard from '../../components/StatsCard';
 import FilterTab from '../../components/FilterTab';
@@ -14,10 +14,18 @@ import StatsCardSkeleton from '../../components/StatsCardSkeleton';
 import TableSkeleton from '../../components/TableSkeleton';
 import { useGetAllAds, useGetAdsStats } from '../../utils/queries/adsQueries';
 import images from '../../constants/images';
+import { getDateThreshold } from '../../constants/help';
+
+const adTypeTabs = [
+  { name: 'All', value: 'all' },
+  { name: 'Social', value: 'post' },
+  { name: 'Marketplace', value: 'listing' },
+];
 
 const Ads: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
-  const [boostStatus, setBoostStatus] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: ads, isLoading: adsLoading, error: adsError } = useGetAllAds();
@@ -27,22 +35,34 @@ const Ads: React.FC = () => {
     if (!ads) return [];
     let temp = [...ads];
 
-    if (boostStatus !== 'all') {
-      temp = temp.filter((item) => item.status === boostStatus);
+    if (statusFilter !== 'all') {
+      temp = temp.filter((item) => item.status === statusFilter);
     }
 
     if (activeTab !== 'all') {
-      temp = temp.filter((item) => item.title?.toLowerCase().includes(activeTab));
+      temp = temp.filter((item) => item.type === activeTab);
+    }
+
+    if (dateFilter !== 'all') {
+      const threshold = getDateThreshold(dateFilter);
+      if (threshold) {
+        temp = temp.filter((item) => {
+          const itemDate = item.date ? new Date(item.date) : null;
+          return itemDate && itemDate >= threshold;
+        });
+      }
     }
 
     if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
       temp = temp.filter((item) =>
-        item.title?.toLowerCase().includes(searchTerm.toLowerCase())
+        item.title?.toLowerCase().includes(term) ||
+        item.name?.toLowerCase().includes(term)
       );
     }
 
     return temp;
-  }, [ads, boostStatus, activeTab, searchTerm]);
+  }, [ads, statusFilter, activeTab, dateFilter, searchTerm]);
 
   const adsStatistics = stats ? [
     {
@@ -101,7 +121,7 @@ const Ads: React.FC = () => {
       </div>
 
       <FilterTab
-        tabs={marketTabs}
+        tabs={adTypeTabs}
         handleValue={(val) => setActiveTab(val)}
         activeTab={activeTab}
       />
@@ -109,14 +129,14 @@ const Ads: React.FC = () => {
       <Vertical>
         <ItemAlign>
           <Dropdown
-            options={dates}
-            onChange={(val) => console.log('Date:', val)}
+            options={[{ name: 'all', value: 'all' }, ...dates]}
+            onChange={(val) => setDateFilter(val)}
             placeholder="Dates"
             position="left-0"
           />
           <Dropdown
             options={adsStatus}
-            onChange={(val) => setBoostStatus(val)}
+            onChange={(val) => setStatusFilter(val)}
             placeholder="Status"
             position="left-0"
           />

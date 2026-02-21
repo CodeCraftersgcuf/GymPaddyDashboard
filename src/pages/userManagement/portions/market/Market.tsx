@@ -17,6 +17,7 @@ import { useGetUserListings } from '../../../../utils/queries/marketQueries';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import StatsCardSkeleton from '../../../../components/StatsCardSkeleton';
 import images from '../../../../constants/images';
+import { getDateThreshold } from '../../../../constants/help';
 
 const Market: React.FC = () => {
   const location = useLocation();
@@ -24,6 +25,7 @@ const Market: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('all');
   const [boostStatus, setBoostStatus] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   
   const { data: user, isLoading: userLoading } = useGetUserByUsername(username || '');
@@ -41,6 +43,16 @@ const Market: React.FC = () => {
       temp = temp.filter((item) => item.status === activeTab);
     }
 
+    if (dateFilter !== 'all') {
+      const threshold = getDateThreshold(dateFilter);
+      if (threshold) {
+        temp = temp.filter((item) => {
+          const itemDate = item.createdAt ? new Date(item.createdAt) : null;
+          return itemDate && itemDate >= threshold;
+        });
+      }
+    }
+
     if (searchTerm.trim() !== '') {
       temp = temp.filter((item) =>
         item.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -48,7 +60,7 @@ const Market: React.FC = () => {
     }
 
     return temp;
-  }, [listings, boostStatus, activeTab, searchTerm]);
+  }, [listings, boostStatus, activeTab, dateFilter, searchTerm]);
   
   const marketStats = listings ? [
     {
@@ -111,8 +123,8 @@ const Market: React.FC = () => {
         <Vertical>
           <ItemAlign>
             <Dropdown
-              options={dates}
-              onChange={(val) => console.log('Date:', val)}
+              options={[{ name: 'all', value: 'all' }, ...dates]}
+              onChange={(val) => setDateFilter(val)}
               placeholder="Dates"
               position="left-0"
             />

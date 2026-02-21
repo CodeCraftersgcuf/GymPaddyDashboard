@@ -6,8 +6,9 @@ export interface Transaction {
   id: string;
   transactionId?: number;
   fullName?: string;
+  username?: string | null;
   profile_picture?: string | null;
-  amount: string;
+  amount: number;
   type: 'topup' | 'withdrawal' | string;
   status: 'pending' | 'completed' | 'failed';
   date: string;
@@ -37,7 +38,12 @@ export const useGetAllTransactions = (options?: UseQueryOptions<Transaction[]>) 
 export const useGetUserTransactions = (userId: string, options?: UseQueryOptions<Transaction[]>) => {
   return useQuery<Transaction[]>({
     queryKey: ['transactions', 'user', userId],
-    queryFn: () => apiCall.get<Transaction[]>(API_ROUTES.TRANSACTIONS.GET_USER_TRANSACTIONS(userId)),
+    queryFn: async () => {
+      const response = await apiCall.get<Transaction[] | any>(API_ROUTES.TRANSACTIONS.GET_USER_TRANSACTIONS(userId));
+      if (Array.isArray(response)) return response;
+      if (response?.transactions && Array.isArray(response.transactions)) return response.transactions;
+      return [];
+    },
     enabled: !!userId,
     ...options,
   });

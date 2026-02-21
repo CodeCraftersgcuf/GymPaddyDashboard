@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertOctagon, AlertTriangle, Eye } from 'lucide-react';
 import MoreDropdown from '../../../components/MoreDropdown';
 import BanUserModal from './BanUserModal';
+import { storageUrl } from '../../../constants/help';
 
 interface UserProfileProps {
   userData: {
@@ -34,13 +35,13 @@ const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
             <div className="relative w-28 h-28 rounded-full overflow-hidden bg-white">
               {userData.profilePicture ? (
                 <img
-                  src={userData.profilePicture}
+                  src={storageUrl(userData.profilePicture) || userData.profilePicture}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-black font-bold text-xl">
-                  {userData.username.charAt(0)}
+                  {userData.username?.charAt(0) || '?'}
                 </div>
               )}
               {/* Online Status Dot */}

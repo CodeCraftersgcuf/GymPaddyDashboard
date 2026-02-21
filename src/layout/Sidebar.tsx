@@ -1,20 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import LinkComp from "./components/Link";
 import { Sidebar_links } from "../constants/sidebarLinks";
 import images from "../constants/images";
+import { LogOut, ArrowLeft } from "lucide-react";
+import apiCall from "../utils/apiCall";
+import { API_ROUTES } from "../config/apiRoutes";
 interface SidebarProps {
     setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [activeLink, setActiveLink] = useState<string>("/dashboard");
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     useEffect(() => {
         setActiveLink(location.pathname);
     }, [location.pathname]);
+
+    const handleLogout = async () => {
+        setLoggingOut(true);
+        try {
+            await apiCall.post(API_ROUTES.AUTH.LOGOUT);
+        } catch {
+            // Proceed with local logout even if API call fails
+        } finally {
+            localStorage.removeItem('authToken');
+            navigate('/');
+        }
+    };
 
     return (
         <div
@@ -41,9 +58,9 @@ const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
                 {menuOpen && (
                     <div
                         onClick={() => setMenuOpen(false)}
-                        className="absolute top-4 left-4 bg-gray-800 p-2 rounded-md"
+                        className="absolute top-4 left-4 bg-gray-800 p-2 rounded-md cursor-pointer"
                     >
-                        <i className="bi bi-arrow-left-short text-2xl"></i>
+                        <ArrowLeft size={22} className="text-white" />
                     </div>
                 )}
             </div>
@@ -69,9 +86,13 @@ const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
 
             {/* Logout Button */}
             <div className="p-4 mt-4 flex items-center justify-center">
-                <button className="flex items-center justify-center p-2 gap-2 text-[#FF0000] font-bold rounded-lg w-full border border-[#F70F0F]">
-                    <i className="bi bi-box-arrow-left text-2xl"></i>
-                    {!menuOpen && <span>Logout</span>}
+                <button
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="flex items-center justify-center p-2 gap-2 text-[#FF0000] font-bold rounded-lg w-full border border-[#F70F0F] hover:bg-red-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                    <LogOut size={22} />
+                    {!menuOpen && <span>{loggingOut ? 'Logging out…' : 'Logout'}</span>}
                 </button>
             </div>
         </div>

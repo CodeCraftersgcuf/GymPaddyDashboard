@@ -14,10 +14,12 @@ import StatsCardSkeleton from '../../components/StatsCardSkeleton';
 import TableSkeleton from '../../components/TableSkeleton';
 import { useGetAllTransactions, useGetTransactionStats } from '../../utils/queries/transactionQueries';
 import images from '../../constants/images';
+import { getDateThreshold } from '../../constants/help';
 
 const Transaction: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [transactionStatus, setTransactionStatus] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useGetAllTransactions();
@@ -36,9 +38,18 @@ const Transaction: React.FC = () => {
       const matchesStatus = transactionStatus === 'all' || item.status === transactionStatus;
       const matchesSearch = searchQuery === '' || item.id?.toString().toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesTab && matchesStatus && matchesSearch;
+      let matchesDate = true;
+      if (dateFilter !== 'all') {
+        const threshold = getDateThreshold(dateFilter);
+        if (threshold) {
+          const itemDate = item.date ? new Date(item.date) : null;
+          matchesDate = !!itemDate && itemDate >= threshold;
+        }
+      }
+
+      return matchesTab && matchesStatus && matchesSearch && matchesDate;
     });
-  }, [transactions, activeTab, transactionStatus, searchQuery]);
+  }, [transactions, activeTab, transactionStatus, dateFilter, searchQuery]);
 
   const revenueStats = stats ? [
     {
@@ -115,8 +126,8 @@ const Transaction: React.FC = () => {
       <Vertical>
         <ItemAlign>
           <Dropdown
-            options={dates}
-            onChange={(e) => console.log('Date:', e)}
+            options={[{ name: 'all', value: 'all' }, ...dates]}
+            onChange={(val) => setDateFilter(val)}
             placeholder="Dates"
             position="left-0"
           />

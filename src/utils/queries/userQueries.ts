@@ -74,3 +74,27 @@ export const useGetUserStatsBySection = (options?: UseQueryOptions<UserStatsBySe
     ...options,
   });
 };
+
+export interface UserChat {
+  id: number;
+  otherUserId: number;
+  otherUserName: string;
+  otherUsername: string;
+  otherUserAvatar: string | null;
+  lastMessage: string;
+  lastMessageAt: string;
+  messageCount: number;
+  date: string;
+}
+
+export const useGetUserChats = (userId: string, options?: UseQueryOptions<UserChat[]>) => {
+  return useQuery<UserChat[]>({
+    queryKey: ['user', 'chats', userId],
+    queryFn: async () => {
+      const response = await apiCall.get<UserChat[] | any>(API_ROUTES.USER_MANAGEMENT.CHAT(userId));
+      return Array.isArray(response) ? response : [];
+    },
+    enabled: !!userId,
+    ...options,
+  });
+};

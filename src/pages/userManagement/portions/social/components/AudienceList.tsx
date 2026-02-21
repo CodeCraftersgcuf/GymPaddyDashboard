@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
+import { avatarUrl } from '../../../../../constants/help';
 
 interface AudienceListProps {
   audience: Array<{
@@ -27,7 +28,7 @@ const AudienceList: React.FC<AudienceListProps> = ({ audience }) => {
           <div key={index} className="flex items-center justify-between py-3 border-b last:border-0">
             <div className="flex items-center gap-3">
               <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                src={avatarUrl(null, viewer.name)}
                 alt={viewer.name}
                 className="w-12 h-12 rounded-full"
               />

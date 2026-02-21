@@ -8,7 +8,7 @@ interface UserFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<UserFormValues>;
-  onSubmit: (values: UserFormValues) => void;
+  onSubmit: (values: UserFormValues) => void | Promise<void>;
 }
 
 interface UserFormValues {
@@ -31,17 +31,15 @@ const validationSchema = Yup.object().shape({
   phoneNumber: Yup.string().required('Phone number is required'),
   gender: Yup.string().required('Gender is required'),
   age: Yup.number().min(1, 'Age must be positive').required('Age is required'),
-  password: Yup.string().when('isEdit', {
-    is: false,
-    then: (schema) => schema.min(6, 'Minimum 6 characters').required('Password is required'),
-    otherwise: (schema) => schema.optional(),
-  }),
-  profile_picture: Yup.mixed().required('Profile image is required'),
+  password: Yup.string().min(6, 'Minimum 6 characters').required('Password is required'),
+  profile_picture: Yup.mixed().nullable(),
 });
 
 const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialData, onSubmit }) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isEdit = !!initialData;
 
@@ -51,7 +49,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
     } else {
       setPreviewImage(null);
     }
-  }, [initialData]);
+    setSubmitError(null);
+    setSubmitting(false);
+  }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
@@ -71,10 +71,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
-          console.log('Values from Modal : ',values)
-          onSubmit(values);
-          onClose();
+        onSubmit={async (values) => {
+          setSubmitError(null);
+          setSubmitting(true);
+          try {
+            await onSubmit(values);
+          } catch (err: any) {
+            setSubmitError(err?.response?.data?.message || err?.message || 'Failed to save user. Please try again.');
+          } finally {
+            setSubmitting(false);
+          }
         }}
       >
         {({ errors, touched, setFieldValue }) => (
@@ -177,11 +183,16 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
               </div>
             )}
 
+            {submitError && (
+              <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">{submitError}</p>
+            )}
+
             <button
               type="submit"
-              className="cursor-pointer w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors"
+              disabled={submitting}
+              className="cursor-pointer w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isEdit ? 'Update' : 'Save'}
+              {submitting ? 'Saving...' : isEdit ? 'Update' : 'Save'}
             </button>
           </Form>
         )}

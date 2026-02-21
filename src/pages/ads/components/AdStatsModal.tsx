@@ -1,27 +1,21 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { avatarUrl } from '../../../constants/help';
+import type { Ad } from '../../../utils/queries/adsQueries';
 
 interface AdStatsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: {
-    name: string;
-    userImage?: string | null;
-    location?: string;
-    amountSpent: string;
-    boostDuration: string;
-    dateCreated: string;
-    impressions: number;
-    clicks: number;
-  };
+  data: Ad;
 }
 
 const AdStatsModal: React.FC<AdStatsModalProps> = ({ isOpen, onClose, data }) => {
   if (!isOpen) return null;
 
-  const ctr = data.impressions > 0
-    ? ((data.clicks / data.impressions) * 100).toFixed(2) + '%'
+  const impressions = data.impressions ?? 0;
+  const clicks = data.clicks ?? 0;
+  const ctr = impressions > 0
+    ? ((clicks / impressions) * 100).toFixed(2) + '%'
     : '0%';
 
   return (
@@ -52,12 +46,15 @@ const AdStatsModal: React.FC<AdStatsModalProps> = ({ isOpen, onClose, data }) =>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <StatCard title="Amount Spent" value={data.amountSpent} />
-              <StatCard title="Duration"     value={data.boostDuration} />
+              <StatCard title="Budget" value={data.amountSpent} />
+              <StatCard title="Duration" value={data.boostDuration} />
               <StatCard title="Date Created" value={data.dateCreated} />
-              <StatCard title="Impressions"  value={data.impressions.toLocaleString()} />
-              <StatCard title="Clicks"       value={data.clicks.toLocaleString()} />
-              <StatCard title="CTR"          value={ctr} />
+              <StatCard title="Impressions" value={impressions.toLocaleString()} />
+              <StatCard title="Clicks" value={clicks.toLocaleString()} />
+              <StatCard title="CTR" value={ctr} />
+              <StatCard title="Ad Status" value={data.adStatus} />
+              <StatCard title="Start Date" value={data.startDate} />
+              <StatCard title="End Date" value={data.endDate} />
             </div>
           </div>
         </div>
@@ -69,7 +66,7 @@ const AdStatsModal: React.FC<AdStatsModalProps> = ({ isOpen, onClose, data }) =>
 const StatCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
   <div className="bg-gray-100 p-4 rounded-lg">
     <p className="text-sm text-gray-500">{title}</p>
-    <p className="font-semibold mt-1">{value}</p>
+    <p className="font-semibold mt-1">{value || '—'}</p>
   </div>
 );
 

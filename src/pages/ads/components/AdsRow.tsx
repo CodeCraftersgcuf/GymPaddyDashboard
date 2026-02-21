@@ -3,34 +3,25 @@ import ListingDetailsModal from './ListingDetailsModal';
 import AdStatsModal from './AdStatsModal';
 import Button from '../../../components/Buttons/Button';
 import { avatarUrl } from '../../../constants/help';
+import type { Ad } from '../../../utils/queries/adsQueries';
 
 interface AdsRowProps {
-  displayData: {
-    id: number;
-    image?: string | null;
-    name: string;
-    userImage?: string | null;
-    location?: string;
-    title: string;
-    price: string;
-    duration: string;
-    status: string;
-    date: string;
-    description: string;
-    category: string;
-    dateCreated: string;
-    listingStatus: string;
-    adStatus: string;
-    amountSpent: string;
-    boostDuration: string;
-    impressions: number;
-    clicks: number;
-  };
+  displayData: Ad;
 }
 
 const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
   const [showListingDetails, setShowListingDetails] = useState(false);
   const [showAdStats, setShowAdStats] = useState(false);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-600';
+      case 'pending': return 'bg-yellow-500';
+      case 'paused': return 'bg-orange-500';
+      case 'completed': return 'bg-blue-500';
+      default: return 'bg-red-500';
+    }
+  };
 
   return (
     <>
@@ -41,7 +32,7 @@ const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
         <td className="p-4">
           <div className="flex items-center gap-2">
             <img
-              src={avatarUrl(displayData.image ?? displayData.userImage, displayData.name)}
+              src={avatarUrl(displayData.userImage, displayData.name)}
               alt="profile"
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -52,25 +43,16 @@ const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
         <td className="p-4">{displayData.price}</td>
         <td className="p-4">{displayData.duration}</td>
         <td className="p-4">
-          <div
-            className={`w-4 h-4 rounded-full ${displayData.status === 'active'
-                ? 'bg-green-600'
-                : displayData.status === 'pending'
-                  ? 'bg-yellow-500'
-                  : 'bg-red-500'
-              }`}
-          />
+          <div className={`w-4 h-4 rounded-full ${getStatusColor(displayData.status)}`} />
         </td>
         <td className="p-4">{displayData.date}</td>
         <td className="p-4 flex gap-2">
-          <Button
-            handleFunction={() => setShowListingDetails(true)}
-          >
+          <Button handleFunction={() => setShowListingDetails(true)}>
             Full Details
           </Button>
           <button
             onClick={() => setShowAdStats(true)}
-            className='py-2 px-4 text-white rounded-lg bg-black'
+            className="py-2 px-4 text-white rounded-lg bg-black"
           >
             Ad Stats
           </button>

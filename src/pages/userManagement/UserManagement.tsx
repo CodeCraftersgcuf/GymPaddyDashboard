@@ -51,12 +51,8 @@ const UserManagement: React.FC = () => {
   }, [users, statusFilter, searchQuery]);
 
   const handleSubmit = async (values: any) => {
-    try {
-      await createUserMutation.mutateAsync(values);
-      setmodalOpen(false);
-    } catch (error) {
-      console.error("Error creating user:", error);
-    }
+    await createUserMutation.mutateAsync(values);
+    setmodalOpen(false);
   };
 
   // Transform stats data to match StatsCard format

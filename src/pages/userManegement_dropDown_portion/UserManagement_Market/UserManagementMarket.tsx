@@ -14,6 +14,7 @@ import TableCan from "../../../components/TableCan";
 import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
 import { useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
+import { useCreateUser } from "../../../utils/mutations/userMutations";
 import images from "../../../constants/images";
 
 const UserManagementMarket: React.FC = () => {
@@ -23,6 +24,7 @@ const UserManagementMarket: React.FC = () => {
 
   const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
   const { data: users, isLoading: usersLoading } = useGetAllUsers();
+  const createUserMutation = useCreateUser();
 
   const statCards = sectionStats
     ? [
@@ -138,7 +140,7 @@ const UserManagementMarket: React.FC = () => {
       )}
 
       <UserFormModal
-        onSubmit={(values) => { console.log("Form submitted:", values); setModalOpen(false); }}
+        onSubmit={async (values) => { await createUserMutation.mutateAsync(values); setModalOpen(false); }}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
       />

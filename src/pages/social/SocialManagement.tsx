@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom';
-import HeaderWrapper from '../userManagement/components/HeaderWrapper';
+import Horizontal from '../../components/alignments/Horizontal';
 import StatsCard from '../../components/StatsCard';
 import FilterTab from '../../components/FilterTab';
 import PostPortion from './Portions/PostPortion';
@@ -37,9 +36,6 @@ const RenderComponent = (activeTab: string, data?: any, isLoading?: boolean, err
 }
 
 const SocialManagement: React.FC = () => {
-  const location = useLocation();
-  const [activeTab, setactiveTab] = useState('all');
-  const { username } = useParams();
   const [activePortion, setActivePortion] = useState('all')
   
   const { data: posts, isLoading: postsLoading, error: postsError } = useGetAllPosts();
@@ -48,57 +44,38 @@ const SocialManagement: React.FC = () => {
   const { data: stats, isLoading: statsLoading } = useGetSocialStats();
 
   const tabs = [
-    {
-      name: 'all', value: 'all'
-    },
-    {
-      name: 'status', value: 'status'
-    },
-    {
-      name: 'live', value: 'live'
-    },
+    { name: 'all', value: 'all' },
+    { name: 'status', value: 'status' },
+    { name: 'live', value: 'live' },
   ]
 
-  const hanldeValues = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return posts || [];
-      case 'status':
-        return statuses || [];
-      case 'live':
-        return liveStreams || [];
-      default:
-        return [];
+  const handleValues = (tab: string) => {
+    switch (tab) {
+      case 'all': return posts || [];
+      case 'status': return statuses || [];
+      case 'live': return liveStreams || [];
+      default: return [];
     }
   }
 
-  const getLoadingState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return postsLoading;
-      case 'status':
-        return statusesLoading;
-      case 'live':
-        return liveLoading;
-      default:
-        return false;
+  const getLoadingState = (tab: string) => {
+    switch (tab) {
+      case 'all': return postsLoading;
+      case 'status': return statusesLoading;
+      case 'live': return liveLoading;
+      default: return false;
     }
   }
 
-  const getErrorState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return postsError;
-      case 'status':
-        return statusesError;
-      case 'live':
-        return liveError;
-      default:
-        return null;
+  const getErrorState = (tab: string) => {
+    switch (tab) {
+      case 'all': return postsError;
+      case 'status': return statusesError;
+      case 'live': return liveError;
+      default: return null;
     }
   }
 
-  // Transform stats data to match StatsCard format
   const socialManagementStats = stats ? [
     {
       icon: images.social,
@@ -130,12 +107,7 @@ const SocialManagement: React.FC = () => {
   ] : [];
 
   return (
-    <HeaderWrapper
-      location={location}
-      user={username}
-      activeTab={activeTab}
-      setActiveTab={setactiveTab}
-    >
+    <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {statsLoading ? (
           <>
@@ -157,11 +129,11 @@ const SocialManagement: React.FC = () => {
       />
       {RenderComponent(
         activePortion, 
-        hanldeValues(activePortion),
+        handleValues(activePortion),
         getLoadingState(activePortion),
         getErrorState(activePortion)
       )}
-    </HeaderWrapper>
+    </Horizontal>
   )
 }
 

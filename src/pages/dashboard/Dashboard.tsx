@@ -1,8 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import Horizontal from "../../components/alignments/Horizontal";
 import StatsCard from "../../components/StatsCard";
 import SiteStatisticsChart from "./components/SiteStatisticsChart";
-import Button from "../../components/Buttons/Button";
 import Vertical from "../../components/alignments/Vertical";
 import PostCan from "../../components/PostCan";
 import TableCan from "../../components/TableCan";
@@ -83,9 +83,12 @@ const Dashboard: React.FC = () => {
             <h2 className="text-2xl font-semibold  flex items-center gap-2 py-4 pb-4">
               Latest Posts
             </h2>
-            <Button>
+            <Link
+              to="/social"
+              className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition"
+            >
               View All
-            </Button>
+            </Link>
           </Vertical>
           <div className="p-1 w-full h-[400px] overflow-auto bg-white rounded-lg shadow-lg border border-gray-300 divide-gray-200">
             {postsLoading ? (

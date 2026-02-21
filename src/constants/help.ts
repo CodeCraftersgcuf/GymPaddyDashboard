@@ -18,15 +18,56 @@ export function dummyImage() {
     return `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100) + 1}.jpg`;
 }
 
+const STORAGE_BASE = import.meta.env.VITE_STORAGE_URL || 'http://localhost:8000/storage';
+
+/**
+ * Converts a relative storage path (e.g. "profile_pictures/abc.jpg") into a full URL.
+ * Already-absolute URLs (http/https/data:) are returned unchanged.
+ * Returns null for falsy inputs.
+ */
+export function storageUrl(path?: string | null): string | null {
+    if (!path) return null;
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+        return path;
+    }
+    const cleanBase = STORAGE_BASE.replace(/\/+$/, '');
+    // Strip leading /storage/ prefix if present (the base URL already includes /storage)
+    let cleanPath = path.replace(/^\/+/, '');
+    if (cleanPath.startsWith('storage/')) {
+        cleanPath = cleanPath.substring('storage/'.length);
+    }
+    return `${cleanBase}/${cleanPath}`;
+}
+
 /**
  * Returns the real profile picture URL when one exists, otherwise falls back to a
  * stable generated avatar (consistent initials-based image, no random flickering).
  */
 export function avatarUrl(picture?: string | null, name?: string | null): string {
-    if (picture) return picture;
+    const resolved = storageUrl(picture);
+    if (resolved) return resolved;
     const initials = encodeURIComponent((name || 'User').trim() || 'User');
     return `https://ui-avatars.com/api/?name=${initials}&background=fee2e2&color=ef4444&bold=true&size=128`;
 }
+/**
+ * Returns a Date threshold for date-range filtering based on dropdown filter values.
+ * Returns null for 'all' or unrecognized values (meaning no filter).
+ */
+export function getDateThreshold(filterValue: string): Date | null {
+    const now = new Date();
+    switch (filterValue) {
+        case 'today': {
+            const d = new Date(now);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+        case '7':   return new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
+        case '30':  return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        case '365': return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        default:    return null;
+    }
+}
+
 export function formatCreatedAt(timestamp : any) {
     const date = new Date(timestamp);
 

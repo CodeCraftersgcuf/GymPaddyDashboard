@@ -15,23 +15,23 @@ interface props {
 }
 
 const LivePortion: React.FC<props> = ({ data }) => {
-    console.log(data);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState(data);
 
     useEffect(() => {
-        let temp = [...data];
+        let temp = [...(data || [])];
 
-        // Search filter
         if (searchQuery.trim() !== '') {
+            const q = searchQuery.toLowerCase();
             temp = temp.filter((item) =>
-                item.status.toLowerCase().includes(searchQuery.toLowerCase())
+                (item.fullName || '').toLowerCase().includes(q) ||
+                (item.username || '').toLowerCase().includes(q) ||
+                (item.title || '').toLowerCase().includes(q)
             );
         }
 
         setFilteredData(temp);
-    }, [searchQuery]);
-    console.log("Filter data",filteredData)
+    }, [data, searchQuery]);
 
     return (
         <Horizontal>

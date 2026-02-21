@@ -1227,8 +1227,10 @@ export const marketStatics = [
 
 export const marketTabs = [
     { name: 'all', value: 'all' },
-    { name: 'social', value: 'social' },
-    { name: 'marketplace', value: 'marketplace' },
+    { name: 'active', value: 'active' },
+    { name: 'pending', value: 'pending' },
+    { name: 'running', value: 'running' },
+    { name: 'closed', value: 'closed' },
 ]
 
 export const ListingTableHeaders = [

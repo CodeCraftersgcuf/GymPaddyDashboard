@@ -76,7 +76,6 @@ const Dropdown: React.FC<DropdownProps> = ({
       onMouseLeave={() => setDropdownOpen(false)}
       ref={dropdownRef}
     >
-      {/* Dropdown Button */}
       <button
         className={`flex text-nowrap items-center justify-between cursor-pointer
           gap-${gap} p-2 
@@ -85,6 +84,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           ${getButtonStyles()}
            text-base ${FullWidth ? "w-full" : "w-fit"}`}
         disabled={disabled}
+        onClick={() => setDropdownOpen((prev) => !prev)}
       >
         <div className="flex items-center gap-2">
           {selectedOption?.icon && (
@@ -99,7 +99,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       {/* Dropdown Menu */}
       {dropdownOpen && (
         <div
-          className={`absolute min-w-full z-10 ${position} border border-${borderColor} rounded-lg bg-white shadow-md text-black overflow-hidden`}
+          className={`absolute top-full mt-1 min-w-full z-10 ${position} border border-${borderColor} rounded-lg bg-white shadow-md text-black overflow-hidden`}
         >
           {options.map((option) => (
             <button

@@ -15,111 +15,76 @@ import {
   useGetAdsAnalytics 
 } from '../../utils/queries/analyticsQueries'
 
-const RenderComponent = (activeTab: string, data?: any, isLoading?: boolean, error?: any) => {
-  if (isLoading) {
-    return <LoadingSpinner className="h-64" />;
-  }
-  
-  if (error) {
-    return (
-      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        Error loading analytics data. Please try again.
-      </div>
-    );
-  }
-
-  switch (activeTab) {
-    case 'all':
-      return <AllPortion data={data} />;
-    case 'UsersPortion':
-      return <UserPortion data={data} />;
-    case 'RevenuePortion':
-      return <RevenuePortion data={data} />;
-    case 'AdsPortion':
-      return <AdsPortions data={data} />;
-    default:
-      return null;
-  }
-}
+const dateToPeriod: Record<string, string> = {
+  'today': '7d',
+  '7': '7d',
+  '30': '30d',
+  '90': '90d',
+  '365': '1y',
+};
 
 const Analytics: React.FC = () => {
-  const [activeTab, setactiveTab] = useState('all');
-  
-  const { data: overallData, isLoading: overallLoading, error: overallError } = useGetOverallAnalytics();
-  const { data: userData, isLoading: userLoading, error: userError } = useGetUserAnalytics();
-  const { data: revenueData, isLoading: revenueLoading, error: revenueError } = useGetRevenueAnalytics();
-  const { data: adsData, isLoading: adsLoading, error: adsError } = useGetAdsAnalytics();
+  const [activeTab, setActiveTab] = useState('all');
+  const [period, setPeriod] = useState('30d');
+
+  const { data: overallData, isLoading: overallLoading, error: overallError } = useGetOverallAnalytics(period);
+  const { data: userData, isLoading: userLoading, error: userError } = useGetUserAnalytics(period);
+  const { data: revenueData, isLoading: revenueLoading, error: revenueError } = useGetRevenueAnalytics(period);
+  const { data: adsData, isLoading: adsLoading, error: adsError } = useGetAdsAnalytics(period);
 
   const handleDateFilter = (value: string) => {
-    console.log(value)
-  }
+    setPeriod(dateToPeriod[value] || '30d');
+  };
 
-  const hanldeValues = (activeTab: string) => {
+  const renderContent = () => {
     switch (activeTab) {
-      case 'all':
-        return overallData;
-      case 'UsersPortion':
-        return userData;
-      case 'RevenuePortion':
-        return revenueData;
-      case 'AdsPortion':
-        return adsData;
+      case 'all': {
+        if (overallLoading) return <LoadingSpinner className="h-64" />;
+        if (overallError) return <ErrorMessage />;
+        return <AllPortion data={overallData} />;
+      }
+      case 'UsersPortion': {
+        if (userLoading) return <LoadingSpinner className="h-64" />;
+        if (userError) return <ErrorMessage />;
+        return <UserPortion data={userData} />;
+      }
+      case 'RevenuePortion': {
+        if (revenueLoading) return <LoadingSpinner className="h-64" />;
+        if (revenueError) return <ErrorMessage />;
+        return <RevenuePortion data={revenueData} />;
+      }
+      case 'AdsPortion': {
+        if (adsLoading) return <LoadingSpinner className="h-64" />;
+        if (adsError) return <ErrorMessage />;
+        return <AdsPortions data={adsData} />;
+      }
       default:
         return null;
     }
-  }
-
-  const getLoadingState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return overallLoading;
-      case 'UsersPortion':
-        return userLoading;
-      case 'RevenuePortion':
-        return revenueLoading;
-      case 'AdsPortion':
-        return adsLoading;
-      default:
-        return false;
-    }
-  }
-
-  const getErrorState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return overallError;
-      case 'UsersPortion':
-        return userError;
-      case 'RevenuePortion':
-        return revenueError;
-      case 'AdsPortion':
-        return adsError;
-      default:
-        return null;
-    }
-  }
+  };
 
   return (
     <Horizontal>
       <FilterTab
         tabs={analyticsTab}
-        handleValue={setactiveTab}
+        handleValue={setActiveTab}
         activeTab={activeTab}
       />
       <Dropdown
-        options={dates}
+        options={[{ name: 'all time', value: 'all' }, ...dates]}
         onChange={handleDateFilter}
-        placeholder="Bulk Actions"
+        placeholder="Time Period"
         position="left-0"
       />
-      {RenderComponent(
-        activeTab, 
-        hanldeValues(activeTab),
-        getLoadingState(activeTab),
-        getErrorState(activeTab)
-      )}
+      {renderContent()}
     </Horizontal>
   )
 }
+
+const ErrorMessage = () => (
+  <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+    Error loading analytics data. Please try again.
+  </div>
+);
 
 export default Analytics

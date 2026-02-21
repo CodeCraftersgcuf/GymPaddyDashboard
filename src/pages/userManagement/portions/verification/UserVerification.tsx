@@ -5,6 +5,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import HeaderWrapper from '../../components/HeaderWrapper';
 import { useGetUserByUsername } from '../../../../utils/queries/userQueries';
 import { useGetVerificationByUser } from '../../../../utils/queries/verificationQueries';
+import { storageUrl, avatarUrl } from '../../../../constants/help';
 
 const UserVerification: React.FC = () => {
     const { username } = useParams<{ username: string }>();
@@ -44,9 +45,7 @@ const UserVerification: React.FC = () => {
                                         <div className="relative inline-block">
                                             <img
                                                 src={
-                                                    verification.profilePicture
-                                                        ? `${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.profilePicture}`
-                                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(verification.userName)}&background=random`
+                                                    avatarUrl(verification.profilePicture, verification.userName)
                                                 }
                                                 alt={verification.userName}
                                                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
@@ -103,7 +102,7 @@ const UserVerification: React.FC = () => {
                                             <div className="mt-2 bg-white rounded-lg p-4 w-full">
                                                 {verification.photo ? (
                                                     <img
-                                                        src={`${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.photo}`}
+                                                        src={storageUrl(verification.photo) || ''}
                                                         alt="Certificate"
                                                         className="w-20 h-auto rounded block mx-auto"
                                                     />
@@ -126,9 +125,7 @@ const UserVerification: React.FC = () => {
                                     category: verification.category,
                                     email: verification.businessEmail || verification.userEmail,
                                     phone: verification.businessPhone || verification.userPhone,
-                                    document: verification.photo
-                                        ? `${import.meta.env.VITE_STORAGE_URL ?? ''}/${verification.photo}`
-                                        : '',
+                                    document: storageUrl(verification.photo) || '',
                                     status: verification.status,
                                 }}
                             />

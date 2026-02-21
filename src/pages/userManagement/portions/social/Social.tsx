@@ -7,7 +7,7 @@ import PostPortion from './Portions/PostPortion';
 import StatusPortion from './Portions/StatusPortion';
 import LivePortion from './Portions/LivePortion';
 import { useGetUserByUsername } from '../../../../utils/queries/userQueries';
-import { useGetUserPosts } from '../../../../utils/queries/socialQueries';
+import { useGetUserPosts, useGetUserStatuses, useGetUserLiveStreams } from '../../../../utils/queries/socialQueries';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import StatsCardSkeleton from '../../../../components/StatsCardSkeleton';
 import images from '../../../../constants/images';
@@ -44,80 +44,84 @@ const Social: React.FC = () => {
   const [activePortion, setActivePortion] = useState('all')
   
   const { data: user, isLoading: userLoading } = useGetUserByUsername(username || '');
-  const { data: posts, isLoading: postsLoading, error: postsError } = useGetUserPosts(user?.id?.toString() || '');
+  const userId = user?.id?.toString() || '';
+  const { data: posts, isLoading: postsLoading, error: postsError } = useGetUserPosts(userId);
+  const { data: statuses, isLoading: statusesLoading, error: statusesError } = useGetUserStatuses(userId);
+  const { data: liveStreams, isLoading: liveLoading, error: liveError } = useGetUserLiveStreams(userId);
   
   const tabs = [
-    {
-      name: 'all', value: 'all'
-    },
-    {
-      name: 'status', value: 'status'
-    },
-    {
-      name: 'live', value: 'live'
-    },
+    { name: 'all', value: 'all' },
+    { name: 'status', value: 'status' },
+    { name: 'live', value: 'live' },
   ]
   
-  const hanldeValues = (activeTab: string) => {
-    switch (activeTab) {
+  const handleValues = (tab: string) => {
+    switch (tab) {
       case 'all':
         return posts || [];
       case 'status':
-        return [];
+        return statuses || [];
       case 'live':
-        return [];
+        return liveStreams || [];
       default:
         return [];
     }
   }
   
-  const getLoadingState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return postsLoading;
-      default:
-        return false;
+  const getLoadingState = (tab: string) => {
+    switch (tab) {
+      case 'all': return postsLoading;
+      case 'status': return statusesLoading;
+      case 'live': return liveLoading;
+      default: return false;
     }
   }
   
-  const getErrorState = (activeTab: string) => {
-    switch (activeTab) {
-      case 'all':
-        return postsError;
-      default:
-        return null;
+  const getErrorState = (tab: string) => {
+    switch (tab) {
+      case 'all': return postsError;
+      case 'status': return statusesError;
+      case 'live': return liveError;
+      default: return null;
     }
   }
+
+  const totalPosts = posts?.length || 0;
+  const totalStatuses = statuses?.length || 0;
+  const totalLives = liveStreams?.length || 0;
   
-  const socialStats = posts ? [
+  const socialStats = [
     {
       icon: images.social,
       heading: 'Total',
       subHeading: 'Posts',
       IconColor: '#FF0000',
-      value: posts.length || 0,
+      value: totalPosts,
       changeStatus: 'up',
       subDetail: []
     },
     {
       icon: images.social,
       heading: 'Total',
-      subHeading: 'Likes',
+      subHeading: 'Statuses',
       IconColor: '#0000FF',
-      value: posts.reduce((sum, p) => sum + (p.likes || 0), 0),
+      value: totalStatuses,
       changeStatus: 'up',
       subDetail: []
     },
     {
       icon: images.social,
-      heading: 'Total',
-      subHeading: 'Comments',
+      heading: 'Live',
+      subHeading: 'Streams',
       IconColor: '#008000',
-      value: posts.reduce((sum, p) => sum + (p.comments || 0), 0),
+      value: totalLives,
       changeStatus: 'up',
       subDetail: []
     },
-  ] : []
+  ];
+
+  const isStatsLoading = userLoading || postsLoading || statusesLoading || liveLoading;
+
   return (
     <HeaderWrapper
       location={location}
@@ -126,7 +130,7 @@ const Social: React.FC = () => {
       setActiveTab={setactiveTab}
     >
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {userLoading || postsLoading ? (
+        {isStatsLoading ? (
           <>
             <StatsCardSkeleton />
             <StatsCardSkeleton />
@@ -146,7 +150,7 @@ const Social: React.FC = () => {
       />
       {RenderComponent(
         activePortion, 
-        hanldeValues(activePortion),
+        handleValues(activePortion),
         getLoadingState(activePortion),
         getErrorState(activePortion)
       )}

@@ -81,8 +81,16 @@ export const adsStatus = [
         value: 'active'
     },
     {
-        name: 'inactive',
-        value: 'inactive'
+        name: 'pending',
+        value: 'pending'
+    },
+    {
+        name: 'paused',
+        value: 'paused'
+    },
+    {
+        name: 'completed',
+        value: 'completed'
     },
 ]
 export const connectVerifyStatus = [

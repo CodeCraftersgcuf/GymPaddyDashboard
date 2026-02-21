@@ -5,30 +5,31 @@ import Button from '../../../../../components/Buttons/Button';
 interface TransactionRowProps {
   displayData: {
     id: string;
-    amount: string;
-    status: 'successfull' | 'failed' | 'pending';
-    type: 'topup' | 'withdrawal';
+    amount: number;
+    status: 'completed' | 'failed' | 'pending' | string;
+    type: 'topup' | 'withdrawal' | string;
     date: string;
-    description?: string;
-    accountDetails?: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-    };
+    fullName?: string;
+    description?: string | null;
   };
 }
+
+const formatAmount = (amount: number) =>
+  Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const UserTransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const getStatusIcon = () => {
     switch (displayData.status) {
-      case 'successfull':
+      case 'completed':
         return <span className="w-4 h-4 bg-green-600 block rounded-sm" />;
       case 'failed':
         return <span className="w-4 h-4 bg-red-600 block rounded-sm" />;
       case 'pending':
         return <span className="w-4 h-4 bg-yellow-400 block rounded-sm" />;
+      default:
+        return <span className="w-4 h-4 bg-gray-400 block rounded-sm" />;
     }
   };
 
@@ -38,11 +39,11 @@ const UserTransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
         <td className="p-4">
           <input type="checkbox" className="rounded border-gray-300" />
         </td>
-        <td className="p-4">{displayData.id}</td>
+        <td className="p-4 text-sm text-gray-700">{displayData.id}</td>
         <td className="p-4 font-medium">
           <span className={displayData.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
             {displayData.type === 'withdrawal' ? '-' : '+'}
-            {displayData.amount}
+            ₦{formatAmount(displayData.amount)}
           </span>
         </td>
         <td className="p-4">{getStatusIcon()}</td>

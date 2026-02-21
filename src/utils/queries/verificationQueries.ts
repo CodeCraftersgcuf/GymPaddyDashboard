@@ -6,6 +6,7 @@ export interface Verification {
   id: string;
   userId: number;
   userName: string;
+  username: string;
   userEmail: string;
   userPhone: string;
   profilePicture?: string | null;
@@ -17,6 +18,7 @@ export interface Verification {
   status: 'pending' | 'approved' | 'rejected';
   documents: string[];
   notes: string;
+  created_at: string;
   createdAt: string;
 }
 

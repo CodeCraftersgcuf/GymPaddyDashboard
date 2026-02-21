@@ -21,7 +21,7 @@ const getDaysDifference = (dateStr: string) => {
 
 const Verification: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedDate, setSelectedDate] = useState('today');
+  const [selectedDate, setSelectedDate] = useState('all');
 
   const { data: verifications, isLoading: verificationsLoading, error: verificationsError } = useGetAllVerifications();
   const { data: stats, isLoading: statsLoading } = useGetVerificationStats();
@@ -50,8 +50,11 @@ const Verification: React.FC = () => {
     return verifications.filter(item => {
       const statusMatch = activeTab === 'all' || item.status === activeTab;
 
-      const daysLimit = selectedDate === 'today' ? 1 : parseInt(selectedDate);
-      const dateMatch = getDaysDifference(item.created_at) <= daysLimit;
+      let dateMatch = true;
+      if (selectedDate !== 'all') {
+        const daysLimit = selectedDate === 'today' ? 1 : parseInt(selectedDate);
+        dateMatch = getDaysDifference(item.createdAt) <= daysLimit;
+      }
 
       return statusMatch && dateMatch;
     });
@@ -111,7 +114,7 @@ const Verification: React.FC = () => {
 
       <ItemAlign>
         <Dropdown
-          options={dates}
+          options={[{ name: 'all', value: 'all' }, ...dates]}
           onChange={handleDateFilter}
           placeholder="Date"
           position="left-0"

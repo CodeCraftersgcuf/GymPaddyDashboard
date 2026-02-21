@@ -6,20 +6,19 @@ import { avatarUrl } from '../../../constants/help';
 interface TransactionRowProps {
   displayData: {
     id: string;
-    amount: string;
-    status: 'completed' | 'failed' | 'pending';
+    amount: number;
+    status: 'completed' | 'failed' | 'pending' | string;
     type: 'topup' | 'withdrawal' | string;
     date: string;
     fullName?: string;
+    username?: string | null;
     profile_picture?: string | null;
     description?: string | null;
-    accountDetails?: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-    };
   };
 }
+
+const formatAmount = (amount: number) =>
+  Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -50,14 +49,14 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
               alt="profile"
               className="w-10 h-10 rounded-full"
             />
-            {displayData.fullName || displayData.accountDetails?.accountName}
+            {displayData.fullName || 'Unknown'}
           </div>
         </td>
-        <td className="p-4">{displayData.id}</td>
+        <td className="p-4 text-sm text-gray-700">{displayData.id}</td>
         <td className="p-4 font-medium">
           <span className={displayData.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
             {displayData.type === 'withdrawal' ? '-' : '+'}
-            {displayData.amount}
+            ₦{formatAmount(displayData.amount)}
           </span>
         </td>
         <td className="p-4">{getStatusIcon()}</td>

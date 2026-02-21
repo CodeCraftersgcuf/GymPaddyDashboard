@@ -34,9 +34,11 @@ export const API_ROUTES = {
     GET_USER_POSTS: (userId: string) => `/admin/social/posts/user/${userId}`,
     DELETE_POST: (id: string) => `/admin/social/posts/${id}`,
     GET_STATUSES: '/admin/social/statuses',
+    GET_USER_STATUSES: (userId: string) => `/admin/social/statuses/user/${userId}`,
     GET_STATUS_BY_ID: (id: string) => `/admin/social/statuses/${id}`,
     DELETE_STATUS: (id: string) => `/admin/social/statuses/${id}`,
     GET_LIVE_STREAMS: '/admin/social/live',
+    GET_USER_LIVE_STREAMS: (userId: string) => `/admin/social/live/user/${userId}`,
     GET_LIVE_BY_ID: (id: string) => `/admin/social/live/${id}`,
     END_LIVE: (id: string) => `/admin/social/live/${id}/end`,
     GET_STATS: '/admin/social/stats',
@@ -121,6 +123,13 @@ export const API_ROUTES = {
     MARK_AS_READ: (id: string) => `/admin/notifications/${id}/read`,
   },
 
+  USER_MANAGEMENT: {
+    SOCIAL: (userId: string) => `/admin/user-management/social/${userId}`,
+    MARKETPLACE: (userId: string) => `/admin/user-management/marketPlace/${userId}`,
+    CHAT: (userId: string) => `/admin/user-management/chat/${userId}`,
+    TRANSACTIONS: (userId: string) => `/admin/user-management/transactions/${userId}`,
+  },
+
   SUPPORT: {
     GET_ALL_TICKETS: '/admin/support/tickets',
     GET_TICKET_BY_ID: (id: string) => `/admin/support/tickets/${id}`,
@@ -135,5 +144,10 @@ export const API_ROUTES = {
     CREATE: '/admin/admin',
     UPDATE: (id: string) => `/admin/admin/${id}`,
     DELETE: (id: string) => `/admin/admin/${id}`,
+  },
+
+  SETTINGS: {
+    GET: '/admin/settings',
+    UPDATE: '/admin/settings',
   },
 };

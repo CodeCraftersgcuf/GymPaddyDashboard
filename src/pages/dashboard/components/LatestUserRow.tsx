@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 import { avatarUrl } from '../../../constants/help';
 
 interface UserRowProps {
@@ -39,7 +40,13 @@ const LatestUserRow: React.FC<props> = ({ displayData }) => {
             <td className="p-2 py-4 ">{displayData.age}</td>
             <td className="p-2 py-4">{displayData.lastLogin}</td>
             <td className="p-2 py-4">
-                <button className="bg-red-500 text-white px-4 py-2 rounded">Details</button>
+                {displayData.username ? (
+                    <Link to={`/user/management/profile/${displayData.username}`} className="bg-red-500 text-white px-4 py-2 rounded">
+                        Details
+                    </Link>
+                ) : (
+                    <span className="bg-gray-300 text-gray-500 px-4 py-2 rounded cursor-not-allowed">Details</span>
+                )}
             </td>
         </tr>
     );

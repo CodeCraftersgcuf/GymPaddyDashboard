@@ -1,22 +1,21 @@
 import React from 'react';
-import { X, Copy, Check, AlertTriangle } from 'lucide-react';
+import { X, Copy, Check, AlertTriangle, Clock } from 'lucide-react';
 
 interface TransactionDetailsProps {
   transaction: {
     id: string;
-    amount: string;
+    amount: number;
     status: 'completed' | 'failed' | 'pending' | string;
     type: 'topup' | 'withdrawal' | string;
     date: string;
+    fullName?: string;
     description?: string | null;
-    accountDetails?: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-    };
   };
   onClose: () => void;
 }
+
+const formatAmount = (amount: number) =>
+  Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const TransactionDetails: React.FC<TransactionDetailsProps> = ({
   transaction,
@@ -39,7 +38,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
       case 'pending':
         return (
           <div className="bg-yellow-400 w-16 h-16 rounded-full flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-white" />
+            <Clock className="w-8 h-8 text-white" />
           </div>
         );
       default:
@@ -51,6 +50,19 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
     }
   };
 
+  const getStatusLabel = () => {
+    switch (transaction.status) {
+      case 'completed': return 'Completed';
+      case 'failed': return 'Failed';
+      case 'pending': return 'Pending';
+      default: return transaction.status;
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(transaction.id);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000]">
       <div className="bg-white rounded-lg w-full max-w-md mx-4">
@@ -58,7 +70,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
           <h2 className="text-xl font-semibold">Payment Details</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -73,24 +85,43 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
               }`}
             >
               {transaction.type === 'withdrawal' ? '-' : '+'}
-              {transaction.amount}
+              ₦{formatAmount(transaction.amount)}
             </span>
+            <span className="text-sm text-gray-500 mt-1 capitalize">{getStatusLabel()}</span>
           </div>
 
           <div className="space-y-4 bg-gray-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Tx ID</span>
               <div className="flex items-center gap-2">
-                <span className="text-gray-900">{transaction.id}</span>
-                <button className="text-gray-400 hover:text-gray-600">
+                <span className="text-gray-900 text-sm">{transaction.id}</span>
+                <button onClick={handleCopy} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                   <Copy className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
+            {transaction.fullName && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">User</span>
+                <span className="text-gray-900">{transaction.fullName}</span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Type</span>
               <span className="text-gray-900 capitalize">{transaction.type}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Status</span>
+              <span className={`capitalize font-medium ${
+                transaction.status === 'completed' ? 'text-green-600' :
+                transaction.status === 'failed' ? 'text-red-600' :
+                'text-yellow-600'
+              }`}>
+                {getStatusLabel()}
+              </span>
             </div>
 
             {transaction.description && (
@@ -105,32 +136,6 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
               <span className="text-gray-900">{transaction.date}</span>
             </div>
           </div>
-
-          {transaction.type === 'withdrawal' && transaction.accountDetails && (
-            <div className="mt-6">
-              <h3 className="text-gray-600 mb-4">Withdrawal Account</h3>
-              <div className="space-y-4 bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Account Name</span>
-                  <span className="text-gray-900">
-                    {transaction.accountDetails.accountName}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Account Number</span>
-                  <span className="text-gray-900">
-                    {transaction.accountDetails.accountNumber}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Bank Name</span>
-                  <span className="text-gray-900">
-                    {transaction.accountDetails.bankName}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
