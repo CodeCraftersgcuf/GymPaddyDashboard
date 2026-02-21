@@ -13,7 +13,7 @@ const validationSchema = Yup.object().shape({
     .max(500, 'Message must not exceed 500 characters'),
 });
 
-const NotificationForm: React.FC<{ onSubmit: (values: NotificationFormData) => void }> = ({ onSubmit }) => {
+const NotificationForm: React.FC<{ onSubmit: (values: NotificationFormData) => void; isSubmitting?: boolean }> = ({ onSubmit, isSubmitting }) => {
   const initialValues: NotificationFormData = {
     title: '',
     message: '',
@@ -57,9 +57,10 @@ const NotificationForm: React.FC<{ onSubmit: (values: NotificationFormData) => v
 
           <button
             type="submit"
-            className="w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors"
+            disabled={isSubmitting}
+            className="w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Send
+            {isSubmitting ? 'Sending...' : 'Send'}
           </button>
         </Form>
       )}

@@ -33,3 +33,17 @@ export const useGetNotificationById = (id: string, options?: UseQueryOptions<Not
     ...options,
   });
 };
+
+export const useGetBroadcastHistory = (options?: UseQueryOptions<Notification[]>) => {
+  return useQuery<Notification[]>({
+    queryKey: ['broadcast-history'],
+    queryFn: async () => {
+      const response = await apiCall.get<{ notifications: Notification[] } | Notification[]>(
+        API_ROUTES.NOTIFICATIONS.GET_BROADCAST_HISTORY
+      );
+      if (Array.isArray(response)) return response;
+      return Array.isArray((response as any).notifications) ? (response as any).notifications : [];
+    },
+    ...options,
+  });
+};

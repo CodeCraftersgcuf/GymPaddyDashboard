@@ -72,11 +72,11 @@ const handleResponse = <T>(response: AxiosResponse<BackendResponse<T> | T>): T =
   // Check if response has the standard wrapper format {success, data}
   if (responseData.success !== undefined) {
     const { success, data, error } = responseData as BackendResponse<T>;
-    
-    if (success && data !== undefined) {
-      return data;
+
+    if (success) {
+      return data !== undefined ? data : responseData as T;
     }
-    
+
     throw new Error(error?.message || 'Request failed');
   }
   

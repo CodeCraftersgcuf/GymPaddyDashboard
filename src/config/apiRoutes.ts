@@ -117,9 +117,11 @@ export const API_ROUTES = {
 
   NOTIFICATIONS: {
     GET_ALL: '/admin/notifications',
+    GET_BROADCAST_HISTORY: '/admin/notifications?broadcast=1',
     GET_BY_ID: (id: string) => `/admin/notifications/${id}`,
     SEND: '/admin/notifications/send',
     SEND_BULK: '/admin/notifications/send-bulk',
+    DELETE: (id: string) => `/admin/notifications/${id}`,
     MARK_AS_READ: (id: string) => `/admin/notifications/${id}/read`,
   },
 
