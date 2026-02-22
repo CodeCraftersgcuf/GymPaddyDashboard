@@ -3,6 +3,7 @@ import Horizontal from "../../../../../components/alignments/Horizontal";
 import ItemAlign from "../../../../../components/alignments/ItemAlign";
 import Dropdown from "../../../../../components/Dropdown";
 import { bulkFilter, dates } from "../../../../../constants/FiltersData";
+import { exportToCsv } from "../../../../../utils/exportCsv";
 import TableCan from "../../../../../components/TableCan";
 import SupportRow from "../../../../support/components/SupportRow";
 import { supportTickets } from "../../../../../constants/Data";
@@ -46,7 +47,7 @@ const ConnectMatch: React.FC<props> = ({data}) => {
                 />
                 <Dropdown
                     options={bulkFilter}
-                    onChange={(e) => console.log(e)}
+                    onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'connect_matches'); }}
                     placeholder="Status"
                     position="left-0"
                 />

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { exportToCsv } from '../../utils/exportCsv'
 import Horizontal from '../../components/alignments/Horizontal'
 import StatsCard from '../../components/StatsCard'
 import { connectuserTableHeaders } from '../../constants/Data'
@@ -105,7 +106,7 @@ const ConnectManagement: React.FC = () => {
           />
           <Dropdown
             options={bulkFilter}
-            onChange={(val) => setBulkAction(val)}
+            onChange={(val) => { setBulkAction(val); if (val === 'ExportASCSV') exportToCsv(filteredData, 'connect_users'); }}
             placeholder="Bulk Actions"
             position="left-0"
           />

@@ -24,7 +24,8 @@ export interface UpdateUserPayload {
 
 export interface BanUserPayload {
   reason: string;
-  duration?: number;
+  duration: number;
+  unit: string;
 }
 
 export const useCreateUser = (options?: UseMutationOptions<any, Error, CreateUserPayload>) => {

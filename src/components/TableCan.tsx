@@ -6,9 +6,12 @@ interface TableCanProps<T> {
     ButtonLink?: string;
     headerTr: string[];
     dataTr: T[];
-    TrName: React.ElementType;  // Update to React.ElementType for correct typing
+    TrName: React.ElementType;
     showHeading?: boolean;
     TrPropsName?: Record<string, any>;
+    allSelected?: boolean;
+    someSelected?: boolean;
+    onSelectAll?: (checked: boolean) => void;
 }
 
 const TableCan = <T,>({
@@ -17,9 +20,11 @@ const TableCan = <T,>({
     dataTr,
     TrName,
     showHeading = false,
-    TrPropsName = {}
+    TrPropsName = {},
+    allSelected = false,
+    someSelected = false,
+    onSelectAll,
 }: TableCanProps<T>) => {
-    console.log(dataTr, " : tablecan datetr");
     return (
         <div className="rounded-xl bg-white shadow-md shadow-gray-400 ">
             {showHeading && (
@@ -32,7 +37,13 @@ const TableCan = <T,>({
                     <thead className="bg-theme-light text-black capitalize">
                         <tr>
                             <th className="p-2 py-4 w-10">
-                                <input type="checkbox" />
+                                <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                                    onChange={(e) => onSelectAll?.(e.target.checked)}
+                                    className="cursor-pointer"
+                                />
                             </th>
                             {headerTr.map((item, index) => (
                                 <th
@@ -48,7 +59,6 @@ const TableCan = <T,>({
                     <tbody>
                         {dataTr.length > 0 ? (
                             dataTr.map((data, index) => {
-                                // Now directly use TrName since it is typed as a React component
                                 return <TrName key={index} displayData={data} {...TrPropsName} />;
                             })
                         ) : (

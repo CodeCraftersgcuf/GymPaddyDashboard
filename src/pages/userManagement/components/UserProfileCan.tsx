@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertOctagon, AlertTriangle, Eye } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, Eye, ShieldOff } from 'lucide-react';
 import MoreDropdown from '../../../components/MoreDropdown';
 import BanUserModal from './BanUserModal';
 import { storageUrl } from '../../../constants/help';
+import { useUnbanUser } from '../../../utils/mutations/userMutations';
 
 interface UserProfileProps {
   userData: {
@@ -18,17 +19,52 @@ interface UserProfileProps {
     verified: boolean;
     lastLogin: string;
     dateRegistered: string;
+    is_banned?: boolean;
+    ban_reason?: string | null;
+    banned_until?: string | null;
   };
-  onEdit:()=>void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
+const UserProfileCan: React.FC<UserProfileProps> = ({ userData, onEdit, onDelete }) => {
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const unbanMutation = useUnbanUser();
+
+  const handleDelete = () => {
+    onDelete();
+  };
+
+  const handleUnban = () => {
+    if (!userData?.id) return;
+    if (!window.confirm(`Are you sure you want to unblock "${userData.fullName}"?`)) return;
+    unbanMutation.mutate(userData.id.toString());
+  };
 
   return (
     <>
       <div className="bg-gradient-to-r from-[#990000] to-[#4d0000] text-white rounded-3xl p-6">
+        {userData.is_banned && (
+          <div className="mb-4 bg-red-800/50 border border-red-400/30 rounded-lg px-4 py-3 flex items-center justify-between">
+            <div>
+              <span className="font-semibold text-red-200">This user is currently blocked</span>
+              {userData.ban_reason && <span className="text-red-300 ml-2">- {userData.ban_reason}</span>}
+              {userData.banned_until && (
+                <span className="text-red-300 ml-2">
+                  (until {new Date(userData.banned_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })})
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleUnban}
+              disabled={unbanMutation.isPending}
+              className="bg-white text-black px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-200 cursor-pointer disabled:opacity-50"
+            >
+              {unbanMutation.isPending ? 'Unblocking...' : 'Unblock'}
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left: Profile Card */}
           <div className="flex flex-col items-center justify-center gap-2 col-span-1 lg:col-span-4 bg-[#B31016] h-full rounded-lg p-4 py-8">
@@ -44,7 +80,6 @@ const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
                   {userData.username?.charAt(0) || '?'}
                 </div>
               )}
-              {/* Online Status Dot */}
               <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-green-600 border-2 border-white" />
             </div>
             <div className="text-center">
@@ -52,8 +87,7 @@ const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
               <p className="text-sm opacity-90">{userData.fullName}</p>
             </div>
             <span
-              className={`px-4 py-1 rounded-full text-sm mt-2 ${userData.verified ? 'bg-green-600' : 'bg-white/10'
-                }`}
+              className={`px-4 py-1 rounded-full text-sm mt-2 ${userData.verified ? 'bg-green-600' : 'bg-white/10'}`}
             >
               {userData.verified ? 'Verified' : 'Unverified'}
             </span>
@@ -70,11 +104,28 @@ const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
                 menuClass="bg-white min-w-[150px] text-black"
               >
                 <div className='flex flex-col gap-2'>
-                  <button onClick={() => setIsBanModalOpen(true)} className='flex gap-2 items-center capitalize font-medium py-4 px-3 w-[150px] hover:bg-black/10 cursor-pointer'>
-                    <AlertTriangle size={20} color='black' />
-                    Block User
-                  </button>
-                  <button className='flex gap-2 text-red-500 items-center capitalize font-medium py-4 px-3 w-[150px] hover:bg-black/10 cursor-pointer'>
+                  {userData.is_banned ? (
+                    <button
+                      onClick={handleUnban}
+                      disabled={unbanMutation.isPending}
+                      className='flex gap-2 items-center capitalize font-medium py-4 px-3 w-[150px] hover:bg-black/10 cursor-pointer disabled:opacity-50'
+                    >
+                      <ShieldOff size={20} color='green' />
+                      {unbanMutation.isPending ? 'Unblocking...' : 'Unblock User'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsBanModalOpen(true)}
+                      className='flex gap-2 items-center capitalize font-medium py-4 px-3 w-[150px] hover:bg-black/10 cursor-pointer'
+                    >
+                      <AlertTriangle size={20} color='black' />
+                      Block User
+                    </button>
+                  )}
+                  <button
+                    onClick={handleDelete}
+                    className='flex gap-2 text-red-500 items-center capitalize font-medium py-4 px-3 w-[150px] hover:bg-black/10 cursor-pointer'
+                  >
                     <AlertOctagon size={20} color='red' />
                     Delete User
                   </button>
@@ -134,8 +185,8 @@ const UserProfileCan: React.FC<UserProfileProps> = ({ userData,onEdit }) => {
       <BanUserModal
         isOpen={isBanModalOpen}
         onClose={() => setIsBanModalOpen(false)}
-        userId={userData?.id || 2}
-        onSubmit={(data) => console.log('Banning user:', data)}
+        userId={userData?.id || 0}
+        userName={userData.fullName}
       />
     </>
   );

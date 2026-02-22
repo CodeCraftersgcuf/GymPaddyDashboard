@@ -5,6 +5,7 @@ import Vertical from '../../../components/alignments/Vertical';
 import ItemAlign from '../../../components/alignments/ItemAlign';
 import Dropdown from '../../../components/Dropdown';
 import { bulkFilter, dates } from '../../../constants/FiltersData';
+import { exportToCsv } from '../../../utils/exportCsv';
 import SearchFilter from '../../../components/SearchFilter';
 import TableCan from '../../../components/TableCan';
 import { LivePostHeaders } from '../../../constants/Data';
@@ -49,7 +50,7 @@ const LivePortion: React.FC<props> = ({ data }) => {
                     />
                     <Dropdown
                         options={bulkFilter}
-                        onChange={(val: string) => console.log(val)}
+                        onChange={(val: string) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'live_streams'); }}
                         placeholder="Bulk Actions"
                         position="left-0"
                     />

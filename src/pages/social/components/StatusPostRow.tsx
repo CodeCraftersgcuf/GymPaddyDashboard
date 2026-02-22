@@ -75,8 +75,16 @@ const StatusPostRow: React.FC<Props> = ({ displayData }) => {
             </button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> Hide Status
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to hide this status?')) {
+                      deleteStatus.mutate(displayData.id);
+                    }
+                  }}
+                  disabled={deleteStatus.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2"
+                >
+                  <AlertOctagonIcon size={20} color="black" /> {deleteStatus.isPending ? 'Hiding...' : 'Hide Status'}
                 </button>
                 <button
                   onClick={handleDelete}

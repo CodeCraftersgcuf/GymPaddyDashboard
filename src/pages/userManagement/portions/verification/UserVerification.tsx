@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckCircle2, X, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { CheckCircle2, X, Loader2, ZoomIn } from 'lucide-react';
 import VerifyModal from '../../../verification/components/VerifyModal';
 import { useLocation, useParams } from 'react-router-dom';
 import HeaderWrapper from '../../components/HeaderWrapper';
@@ -12,6 +13,7 @@ const UserVerification: React.FC = () => {
     const location = useLocation();
     const [activeTab, setactiveTab] = useState('all');
     const [isEditModal, setIsEditModal] = useState(false);
+    const [showImageLightbox, setShowImageLightbox] = useState(false);
 
     const { data: user, isLoading: userLoading } = useGetUserByUsername(username ?? '');
     const userId = user?.id?.toString() ?? '';
@@ -101,19 +103,51 @@ const UserVerification: React.FC = () => {
                                             <p className="text-red-200 text-sm">Certificate Image</p>
                                             <div className="mt-2 bg-white rounded-lg p-4 w-full">
                                                 {verification.photo ? (
-                                                    <img
-                                                        src={storageUrl(verification.photo) || ''}
-                                                        alt="Certificate"
-                                                        className="w-20 h-auto rounded block mx-auto"
-                                                    />
+                                                    <div
+                                                        className="cursor-pointer relative group"
+                                                        onClick={() => setShowImageLightbox(true)}
+                                                    >
+                                                        <img
+                                                            src={storageUrl(verification.photo) || ''}
+                                                            alt="Certificate"
+                                                            className="max-h-56 w-auto rounded block mx-auto"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center rounded">
+                                                            <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </div>
+                                                    </div>
                                                 ) : (
                                                     <p className="text-gray-400 text-sm text-center">No certificate uploaded</p>
                                                 )}
                                             </div>
+                                            {verification.photo && (
+                                                <p className="text-red-300/60 text-xs mt-1 text-center">Click image to view full size</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            {showImageLightbox && verification.photo && createPortal(
+                                <div
+                                    className="fixed inset-0 bg-black/80 z-[2000] flex items-center justify-center p-4 cursor-pointer"
+                                    onClick={() => setShowImageLightbox(false)}
+                                >
+                                    <button
+                                        className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-colors"
+                                        onClick={() => setShowImageLightbox(false)}
+                                    >
+                                        <X className="w-6 h-6 text-white" />
+                                    </button>
+                                    <img
+                                        src={storageUrl(verification.photo) || ''}
+                                        alt="Certificate full view"
+                                        className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                </div>,
+                                document.body
+                            )}
 
                             <VerifyModal
                                 isOpen={isEditModal}

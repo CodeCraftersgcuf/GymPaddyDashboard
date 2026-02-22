@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, X, ZoomIn } from 'lucide-react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import Modal from '../../../components/Modal';
@@ -44,6 +45,7 @@ const validationSchema = Yup.object().shape({
 
 const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, onSuccess, business }) => {
   const [selectedStatus, setSelectedStatus] = useState(business.status);
+  const [showImageLightbox, setShowImageLightbox] = useState(false);
 
   const approveMutation = useApproveVerification();
   const rejectMutation = useRejectVerification();
@@ -154,14 +156,42 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, onSuccess,
               {business.document && (
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Certificate</p>
-                  <div className="mt-2 border border-gray-300 py-4 rounded-lg">
+                  <div
+                    className="mt-2 border border-gray-300 py-4 rounded-lg cursor-pointer relative group"
+                    onClick={() => setShowImageLightbox(true)}
+                  >
                     <img
                       src={business.document}
                       alt="Uploaded document"
-                      className="max-h-32 mx-auto rounded"
+                      className="max-h-48 mx-auto rounded"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center rounded-lg">
+                      <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1 text-center">Click image to view full size</p>
                 </div>
+              )}
+
+              {showImageLightbox && business.document && createPortal(
+                <div
+                  className="fixed inset-0 bg-black/80 z-[2000] flex items-center justify-center p-4 cursor-pointer"
+                  onClick={() => setShowImageLightbox(false)}
+                >
+                  <button
+                    className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-colors"
+                    onClick={() => setShowImageLightbox(false)}
+                  >
+                    <X className="w-6 h-6 text-white" />
+                  </button>
+                  <img
+                    src={business.document}
+                    alt="Certificate full view"
+                    className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>,
+                document.body
               )}
 
               {/* Status */}

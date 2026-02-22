@@ -5,6 +5,7 @@ import Modal from '../../../../../components/Modal';
 import LiveView from './LiveView';
 import LiveStats from './LiveStats';
 import { avatarUrl, storageUrl, formatCreatedAt } from '../../../../../constants/help';
+import { useEndLiveStream, useDeleteLiveStream } from '../../../../../utils/mutations/socialMutations';
 
 interface Props {
   displayData: {
@@ -27,6 +28,21 @@ interface Props {
 const LivePostRow: React.FC<Props> = ({ displayData }) => {
   const [showLive, setShowLive] = useState(false);
   const [showStats, setShowStats] = useState(false);
+
+  const endLiveMutation = useEndLiveStream();
+  const deleteLiveMutation = useDeleteLiveStream();
+
+  const handleEndStream = () => {
+    if (!displayData.id) return;
+    if (!window.confirm('Are you sure you want to end this live stream?')) return;
+    endLiveMutation.mutate(String(displayData.id));
+  };
+
+  const handleDelete = () => {
+    if (!displayData.id) return;
+    if (!window.confirm('Are you sure you want to delete this live stream?')) return;
+    deleteLiveMutation.mutate(String(displayData.id));
+  };
 
   const handleViewStats = () => {
     setShowLive(false);
@@ -77,11 +93,21 @@ const LivePostRow: React.FC<Props> = ({ displayData }) => {
             </button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> End Stream
+                <button
+                  onClick={handleEndStream}
+                  disabled={endLiveMutation.isPending || displayData.status === 'Ended'}
+                  className="py-2 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 disabled:opacity-50"
+                >
+                  <AlertOctagonIcon size={20} color="black" />
+                  {endLiveMutation.isPending ? 'Ending...' : 'End Stream'}
                 </button>
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600">
-                  <AlertTriangleIcon size={20} color="red" /> Delete
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteLiveMutation.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 text-red-600 disabled:opacity-50"
+                >
+                  <AlertTriangleIcon size={20} color="red" />
+                  {deleteLiveMutation.isPending ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </MoreDropdown>

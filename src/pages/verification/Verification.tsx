@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { exportToCsv } from '../../utils/exportCsv';
 import Horizontal from '../../components/alignments/Horizontal';
 import StatsCard from '../../components/StatsCard';
 import FilterTab from '../../components/FilterTab';
@@ -42,7 +43,7 @@ const Verification: React.FC = () => {
   };
 
   const handleBulkAction = (value: string) => {
-    console.log("Bulk action:", value);
+    if (value === 'ExportASCSV') exportToCsv(filteredData, 'verifications');
   };
 
   const filteredData = useMemo(() => {

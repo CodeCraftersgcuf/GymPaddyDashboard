@@ -6,6 +6,7 @@ import Modal from '../../../../../components/Modal';
 import BoostStats from './BoostStats';
 import PostView from './PostView';
 import { avatarUrl, formatCreatedAt } from '../../../../../constants/help';
+import { useHidePost, useDeletePost } from '../../../../../utils/mutations/socialMutations';
 
 interface Props {
   displayData: any;
@@ -14,6 +15,8 @@ interface Props {
 const UserPostRow: React.FC<Props> = ({ displayData }) => {
   const [showBoostStats, setShowBoostStats] = useState(false);
   const [showPost, setShowPost] = useState(false);
+  const hidePost = useHidePost();
+  const deletePost = useDeletePost();
 
   const timeAgo = displayData.createdAt
     ? formatCreatedAt(displayData.createdAt)
@@ -22,6 +25,15 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
   const handleViewPost = () => {
     setShowBoostStats(false);
     setShowPost(true);
+  };
+
+  const handleHide = () => {
+    hidePost.mutate(displayData.id);
+  };
+
+  const handleDelete = () => {
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    deletePost.mutate(String(displayData.id));
   };
 
   return (
@@ -41,7 +53,7 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
         <td className="p-4 max-w-[200px] truncate">{displayData.post || displayData.content || '—'}</td>
         <td className="p-4">{displayData.comments ?? 0}</td>
         <td className="p-4">{displayData.like ?? displayData.likes ?? 0}</td>
-        <td className="p-4">{displayData.replies ?? displayData.shares ?? 0}</td>
+        <td className="p-4">{displayData.replies ?? 0}</td>
         <td className={`p-4 font-semibold ${displayData.boostStatus === 'Yes' ? 'text-green-600' : 'text-red-500'}`}>
           {displayData.boostStatus || 'No'}
         </td>
@@ -51,11 +63,19 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
             <Button handleFunction={() => setShowBoostStats(true)}>Details</Button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> Hide Post
+                <button
+                  onClick={handleHide}
+                  disabled={hidePost.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 disabled:opacity-50"
+                >
+                  <AlertOctagonIcon size={20} color="black" /> {hidePost.isPending ? (displayData.isHidden ? 'Unhiding...' : 'Hiding...') : (displayData.isHidden ? 'Unhide Post' : 'Hide Post')}
                 </button>
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600">
-                  <AlertTriangleIcon size={20} color="red" /> Delete Post
+                <button
+                  onClick={handleDelete}
+                  disabled={deletePost.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600 disabled:opacity-50"
+                >
+                  <AlertTriangleIcon size={20} color="red" /> {deletePost.isPending ? 'Deleting...' : 'Delete Post'}
                 </button>
               </div>
             </MoreDropdown>
@@ -71,7 +91,7 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
           timeAgo={timeAgo}
           likes={displayData.like ?? displayData.likes ?? 0}
           comments={displayData.comments ?? 0}
-          shares={displayData.replies ?? displayData.shares ?? 0}
+          shares={displayData.shares ?? 0}
           isBoosted={displayData.boostStatus === 'Yes'}
           postType={displayData.postType || 'Text'}
           date={displayData.date || ''}
@@ -89,7 +109,7 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
             content: displayData.post || displayData.content || '',
             likes: displayData.like ?? displayData.likes ?? 0,
             comments: displayData.comments ?? 0,
-            shares: displayData.replies ?? displayData.shares ?? 0,
+            shares: displayData.shares ?? 0,
             image: displayData.mediaUrl || (displayData.images?.[0] ?? null),
             isBoosted: displayData.boostStatus === 'Yes',
           }}

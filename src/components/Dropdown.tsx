@@ -4,14 +4,15 @@ import React, { useState, useEffect, useRef } from "react";
 interface DropdownOption {
   name: string;
   value: string;
-  icon?: string; // Optional icon support
-  danger?: boolean; // Marks red actions like "Ban"
+  icon?: string;
+  danger?: boolean;
 }
 
 interface DropdownProps {
   options: DropdownOption[];
   onChange: (value: string) => void;
   placeholder?: string;
+  defaultValue?: string;
   roundedValue?: string;
   position?: string;
   bgColor?: string;
@@ -27,6 +28,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   options,
   onChange,
   placeholder = "Select an option",
+  defaultValue,
   roundedValue = "md",
   position = "right-0",
   borderColor = "gray-300",
@@ -35,8 +37,10 @@ const Dropdown: React.FC<DropdownProps> = ({
   FullWidth,
   isNotActiveBg = false,
 }) => {
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<DropdownOption | null>(
+    () => (defaultValue !== undefined ? (options.find(o => o.value === defaultValue) ?? null) : null)
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleOptionClick = (option: DropdownOption) => {
@@ -45,35 +49,26 @@ const Dropdown: React.FC<DropdownProps> = ({
     setDropdownOpen(false);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-      setDropdownOpen(false);
-    }
-  };
-
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Determine button background and text color
   const getButtonStyles = () => {
-    if (isNotActiveBg) {
-      return "bg-white text-black";
-    } else if (selectedOption) {
-      return "bg-white text-black";
-    } else {
+    if (isNotActiveBg || selectedOption) {
       return "bg-white text-black";
     }
+    return "bg-white text-black";
   };
 
   return (
     <div
       className={`relative ${FullWidth ? "w-full" : "w-fit"}`}
-      onMouseEnter={() => setDropdownOpen(true)}
-      onMouseLeave={() => setDropdownOpen(false)}
       ref={dropdownRef}
     >
       <button
@@ -92,11 +87,9 @@ const Dropdown: React.FC<DropdownProps> = ({
           )}
           {selectedOption ? selectedOption.name : placeholder}
         </div>
-        {/* <i className="bi bi-chevron-down text-sm"></i> */}
-        <ChevronDown size={15} color="black" />
+        <ChevronDown size={15} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} color="black" />
       </button>
 
-      {/* Dropdown Menu */}
       {dropdownOpen && (
         <div
           className={`absolute top-full mt-1 min-w-full z-10 ${position} border border-${borderColor} rounded-lg bg-white shadow-md text-black overflow-hidden`}
@@ -104,8 +97,9 @@ const Dropdown: React.FC<DropdownProps> = ({
           {options.map((option) => (
             <button
               key={option.value}
-              className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2 text-left text-nowrap hover:bg-gray-100 capitalize
-                ${option.danger ? "text-red-600" : "text-black"}`}
+              className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-nowrap hover:bg-gray-100 capitalize
+                ${option.danger ? "text-red-600" : "text-black"}
+                ${selectedOption?.value === option.value ? "bg-gray-100 font-medium" : ""}`}
               onClick={() => handleOptionClick(option)}
             >
               {option.icon && (

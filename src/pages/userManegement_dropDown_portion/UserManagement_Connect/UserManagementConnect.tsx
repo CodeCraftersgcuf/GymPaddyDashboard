@@ -8,22 +8,29 @@ import Vertical from "../../../components/alignments/Vertical";
 import ItemAlign from "../../../components/alignments/ItemAlign";
 import Dropdown from "../../../components/Dropdown";
 import { bulkFilter, UserActiveStatus } from "../../../constants/FiltersData";
+import { exportToCsv } from "../../../utils/exportCsv";
 import Button from "../../../components/Buttons/Button";
 import SearchFilter from "../../../components/SearchFilter";
 import TableCan from "../../../components/TableCan";
 import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
+import Pagination from "../../../components/Pagination";
 import { useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
 import { useCreateUser } from "../../../utils/mutations/userMutations";
 import images from "../../../constants/images";
+
+const ITEMS_PER_PAGE = 20;
 
 const UserManagementConnect: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
-  const { data: users, isLoading: usersLoading } = useGetAllUsers();
+  const { data: usersPage, isLoading: usersLoading } = useGetAllUsers(currentPage, ITEMS_PER_PAGE);
+  const users = usersPage?.users ?? [];
+  const pagination = usersPage?.pagination;
   const createUserMutation = useCreateUser();
 
   const statCards = sectionStats
@@ -112,31 +119,42 @@ const UserManagementConnect: React.FC = () => {
         <ItemAlign>
           <Dropdown
             options={UserActiveStatus}
-            onChange={(val) => setStatusFilter(val)}
+            onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
             placeholder="Status"
             position="left-0"
           />
           <Dropdown
             options={bulkFilter}
-            onChange={(val) => console.log("Bulk:", val)}
+            onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredUsers, 'users'); }}
             placeholder="Bulk Actions"
             position="left-0"
           />
         </ItemAlign>
         <ItemAlign>
           <Button handleFunction={() => setModalOpen(true)}>Add New User</Button>
-          <SearchFilter handleFunction={(val) => setSearchQuery(val)} />
+          <SearchFilter handleFunction={(val) => { setSearchQuery(val); setCurrentPage(1); }} />
         </ItemAlign>
       </Vertical>
 
       {usersLoading ? (
         <TableSkeleton rows={10} columns={7} />
       ) : (
-        <TableCan
-          headerTr={userTableHeaders}
-          dataTr={filteredUsers}
-          TrName={UserRow}
-        />
+        <>
+          <TableCan
+            headerTr={userTableHeaders}
+            dataTr={filteredUsers}
+            TrName={UserRow}
+          />
+          {pagination && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              itemsPerPage={pagination.itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          )}
+        </>
       )}
 
       <UserFormModal

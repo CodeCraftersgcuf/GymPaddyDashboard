@@ -11,6 +11,11 @@ export interface Notification {
   status?: string;
   created_at: string;
   time?: string;
+  user?: {
+    id: number | null;
+    username: string;
+    profile_picture: string | null;
+  };
 }
 
 export const useGetAllNotifications = (options?: UseQueryOptions<Notification[]>) => {

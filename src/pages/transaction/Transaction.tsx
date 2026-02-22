@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { exportToCsv } from '../../utils/exportCsv';
 import Horizontal from '../../components/alignments/Horizontal';
 import { TransactionFilter } from '../../constants/Data';
 import StatsCard from '../../components/StatsCard';
@@ -139,7 +140,7 @@ const Transaction: React.FC = () => {
           />
           <Dropdown
             options={bulkFilter}
-            onChange={(e) => console.log('Bulk:', e)}
+            onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'transactions'); }}
             placeholder="Bulk Actions"
             position="left-0"
           />

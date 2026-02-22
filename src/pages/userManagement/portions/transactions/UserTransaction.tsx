@@ -8,6 +8,7 @@ import FilterTab from '../../../../components/FilterTab';
 import ItemAlign from '../../../../components/alignments/ItemAlign';
 import Dropdown from '../../../../components/Dropdown';
 import { bulkFilter, dates } from '../../../../constants/FiltersData';
+import { exportToCsv } from '../../../../utils/exportCsv';
 import Vertical from '../../../../components/alignments/Vertical';
 import SearchFilter from '../../../../components/SearchFilter';
 import TableCan from '../../../../components/TableCan';
@@ -130,7 +131,7 @@ const UserTransaction: React.FC = () => {
             />
             <Dropdown
               options={bulkFilter}
-              onChange={(e) => console.log('Bulk:', e)}
+              onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'transactions'); }}
               placeholder="Bulk Actions"
               position="left-0"
             />

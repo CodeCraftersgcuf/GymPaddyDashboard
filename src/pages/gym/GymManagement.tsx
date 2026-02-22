@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { exportToCsv } from '../../utils/exportCsv';
 import Horizontal from '../../components/alignments/Horizontal';
 import { gymUserTableHeaders } from '../../constants/Data';
 import StatsCard from '../../components/StatsCard';
@@ -30,7 +31,7 @@ const GymManagement: React.FC = () => {
   };
 
   const handleBulkAction = (value: string) => {
-    console.log("Bulk action:", value);
+    if (value === 'ExportASCSV') exportToCsv(filteredData, 'gyms');
   };
 
   const filteredData = useMemo(() => {

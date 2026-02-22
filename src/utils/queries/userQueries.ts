@@ -30,12 +30,29 @@ export interface UserStatsBySection {
   gymHubUsers: number;
 }
 
-export const useGetAllUsers = (options?: UseQueryOptions<User[]>) => {
-  return useQuery<User[]>({
-    queryKey: ['users'],
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
+export interface UsersPage {
+  users: User[];
+  pagination: PaginationMeta;
+}
+
+export const useGetAllUsers = (page = 1, limit = 20, options?: UseQueryOptions<UsersPage>) => {
+  return useQuery<UsersPage>({
+    queryKey: ['users', page, limit],
     queryFn: async () => {
-      const response = await apiCall.get<{ users: User[]; pagination: any }>(API_ROUTES.USERS.GET_ALL);
-      return response.users || [];
+      const response = await apiCall.get<UsersPage>(
+        `${API_ROUTES.USERS.GET_ALL}?page=${page}&limit=${limit}`
+      );
+      return {
+        users: response.users || [],
+        pagination: response.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: limit },
+      };
     },
     ...options,
   });
@@ -76,7 +93,8 @@ export const useGetUserStatsBySection = (options?: UseQueryOptions<UserStatsBySe
 };
 
 export interface UserChat {
-  id: number;
+  id: number | string;
+  type?: 'chat' | 'support';
   otherUserId: number;
   otherUserName: string;
   otherUsername: string;
@@ -85,6 +103,39 @@ export interface UserChat {
   lastMessageAt: string;
   messageCount: number;
   date: string;
+  subject?: string;
+  status?: string;
+}
+
+export interface ChatMessageItem {
+  id: number;
+  senderId: number;
+  senderName: string;
+  senderAvatar: string | null;
+  message: string;
+  image: string | null;
+  read: boolean;
+  createdAt: string;
+  time: string;
+  date: string;
+}
+
+export interface ConversationDetail {
+  id: number;
+  user1: { id: number; name: string; username: string; avatar: string | null };
+  user2: { id: number; name: string; username: string; avatar: string | null };
+  messages: ChatMessageItem[];
+}
+
+export interface TicketDetail {
+  id: number;
+  subject: string;
+  message: string;
+  status: string;
+  user: { id: number; name: string; username: string; avatar: string | null };
+  createdAt: string;
+  date: string;
+  time: string;
 }
 
 export const useGetUserChats = (userId: string, options?: UseQueryOptions<UserChat[]>) => {
@@ -95,6 +146,24 @@ export const useGetUserChats = (userId: string, options?: UseQueryOptions<UserCh
       return Array.isArray(response) ? response : [];
     },
     enabled: !!userId,
+    ...options,
+  });
+};
+
+export const useGetConversationMessages = (conversationId: string, options?: UseQueryOptions<ConversationDetail>) => {
+  return useQuery<ConversationDetail>({
+    queryKey: ['conversation', conversationId],
+    queryFn: () => apiCall.get<ConversationDetail>(API_ROUTES.USER_MANAGEMENT.CONVERSATION_MESSAGES(conversationId)),
+    enabled: !!conversationId,
+    ...options,
+  });
+};
+
+export const useGetTicketDetails = (ticketId: string, options?: UseQueryOptions<TicketDetail>) => {
+  return useQuery<TicketDetail>({
+    queryKey: ['ticket', ticketId],
+    queryFn: () => apiCall.get<TicketDetail>(API_ROUTES.USER_MANAGEMENT.TICKET_DETAILS(ticketId)),
+    enabled: !!ticketId,
     ...options,
   });
 };

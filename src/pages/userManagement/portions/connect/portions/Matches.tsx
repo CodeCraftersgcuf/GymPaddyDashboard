@@ -3,6 +3,7 @@ import Horizontal from '../../../../../components/alignments/Horizontal';
 import ItemAlign from '../../../../../components/alignments/ItemAlign';
 import Dropdown from '../../../../../components/Dropdown';
 import { bulkFilter, dates } from '../../../../../constants/FiltersData';
+import { exportToCsv } from '../../../../../utils/exportCsv';
 import TableCan from '../../../../../components/TableCan';
 import {  matchesTableHeaders } from '../../../../../constants/Data';
 import MatchRow from '../components/MatchRow';
@@ -44,7 +45,7 @@ const Matches: React.FC<Props> = ({ data }) => {
         />
         <Dropdown
           options={bulkFilter}
-          onChange={(e)=>console.log(e)}
+          onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'matches'); }}
           placeholder="Bulk Actions"
           position="left-0"
         />

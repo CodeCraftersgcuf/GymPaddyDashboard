@@ -7,6 +7,7 @@ import BoostStats from './BoostStats';
 import PostView from './PostView';
 import { avatarUrl, formatCreatedAt } from '../../../constants/help';
 import { useDeletePost } from '../../../utils/queries/socialQueries';
+import { useHidePost } from '../../../utils/mutations/socialMutations';
 
 interface Props {
   displayData: any;
@@ -16,6 +17,7 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
   const [showBoostStats, setShowBoostStats] = useState(false);
   const [showPost, setShowPost] = useState(false);
   const deletePost = useDeletePost();
+  const hidePost = useHidePost();
 
   const timeAgo = displayData.createdAt
     ? formatCreatedAt(displayData.createdAt)
@@ -59,8 +61,12 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
             <Button handleFunction={() => setShowBoostStats(true)}>Details</Button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> Hide Post
+                <button
+                  onClick={() => hidePost.mutate(displayData.id)}
+                  disabled={hidePost.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2"
+                >
+                  <AlertOctagonIcon size={20} color="black" /> {hidePost.isPending ? (displayData.isHidden ? 'Unhiding...' : 'Hiding...') : (displayData.isHidden ? 'Unhide Post' : 'Hide Post')}
                 </button>
                 <button
                   onClick={handleDelete}

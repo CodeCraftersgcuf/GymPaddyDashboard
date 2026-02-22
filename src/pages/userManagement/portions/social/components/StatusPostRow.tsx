@@ -4,6 +4,7 @@ import MoreDropdown from '../../../../../components/MoreDropdown';
 import Modal from '../../../../../components/Modal';
 import StatusView from './StatusView';
 import { avatarUrl, storageUrl, formatCreatedAt } from '../../../../../constants/help';
+import { useDeleteStatus } from '../../../../../utils/mutations/socialMutations';
 
 interface Props {
   displayData: {
@@ -23,10 +24,21 @@ interface Props {
 
 const StatusPostRow: React.FC<Props> = ({ displayData }) => {
   const [showStatus, setShowStatus] = useState(false);
+  const deleteStatus = useDeleteStatus();
 
   const timeAgo = displayData.createdAt
     ? formatCreatedAt(displayData.createdAt)
     : displayData.date || '';
+
+  const handleHideStatus = () => {
+    if (!window.confirm('Are you sure you want to hide this status?')) return;
+    deleteStatus.mutate(String(displayData.id));
+  };
+
+  const handleDeleteStatus = () => {
+    if (!window.confirm('Are you sure you want to delete this status?')) return;
+    deleteStatus.mutate(String(displayData.id));
+  };
 
   return (
     <>
@@ -67,11 +79,19 @@ const StatusPostRow: React.FC<Props> = ({ displayData }) => {
             </button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> Hide Status
+                <button
+                  onClick={handleHideStatus}
+                  disabled={deleteStatus.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 disabled:opacity-50"
+                >
+                  <AlertOctagonIcon size={20} color="black" /> {deleteStatus.isPending ? 'Hiding...' : 'Hide Status'}
                 </button>
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600">
-                  <AlertTriangleIcon size={20} color="red" /> Delete Status
+                <button
+                  onClick={handleDeleteStatus}
+                  disabled={deleteStatus.isPending}
+                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600 disabled:opacity-50"
+                >
+                  <AlertTriangleIcon size={20} color="red" /> {deleteStatus.isPending ? 'Deleting...' : 'Delete Status'}
                 </button>
               </div>
             </MoreDropdown>

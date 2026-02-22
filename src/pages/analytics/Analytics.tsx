@@ -16,7 +16,8 @@ import {
 } from '../../utils/queries/analyticsQueries'
 
 const dateToPeriod: Record<string, string> = {
-  'today': '7d',
+  'all': 'all',
+  'today': '1d',
   '7': '7d',
   '30': '30d',
   '90': '90d',

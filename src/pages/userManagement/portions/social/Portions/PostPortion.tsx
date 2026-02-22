@@ -58,6 +58,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
                         options={boostedFilter}
                         onChange={(val: string) => setBoosted(val)}
                         placeholder="Boosted"
+                        defaultValue="all"
                         position="left-0"
                     />
                     <Dropdown

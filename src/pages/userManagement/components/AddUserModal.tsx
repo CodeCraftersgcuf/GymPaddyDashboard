@@ -3,6 +3,7 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Eye, User2 } from 'lucide-react';
 import Modal from '../../../components/Modal';
+import { storageUrl } from '../../../constants/help';
 
 interface UserFormModalProps {
   isOpen: boolean;
@@ -24,14 +25,16 @@ interface UserFormValues {
 
 const genders = ['Male', 'Female', 'Other'];
 
-const validationSchema = Yup.object().shape({
+const buildValidationSchema = (isEdit: boolean) => Yup.object().shape({
   fullName: Yup.string().required('Full name is required'),
   username: Yup.string().required('Username is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   phoneNumber: Yup.string().required('Phone number is required'),
   gender: Yup.string().required('Gender is required'),
   age: Yup.number().min(1, 'Age must be positive').required('Age is required'),
-  password: Yup.string().min(6, 'Minimum 6 characters').required('Password is required'),
+  password: isEdit
+    ? Yup.string().optional()
+    : Yup.string().min(6, 'Minimum 6 characters').required('Password is required'),
   profile_picture: Yup.mixed().nullable(),
 });
 
@@ -44,8 +47,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
   const isEdit = !!initialData;
 
   useEffect(() => {
-    if (initialData?.profile_picture && typeof initialData.profile_picture === 'string') {
-      setPreviewImage(initialData.profile_picture);
+    const pic = (initialData as any)?.profilePicture || initialData?.profile_picture;
+    if (pic && typeof pic === 'string') {
+      setPreviewImage(storageUrl(pic) || pic);
     } else {
       setPreviewImage(null);
     }
@@ -55,12 +59,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
 
   if (!isOpen) return null;
 
+  const normalizeGender = (g?: string): string => {
+    if (!g) return '';
+    const lower = g.toLowerCase();
+    const match = genders.find((opt) => opt.toLowerCase() === lower);
+    return match || '';
+  };
+
   const initialValues: UserFormValues = {
     fullName: initialData?.fullName || '',
     username: initialData?.username || '',
     email: initialData?.email || '',
     phoneNumber: initialData?.phoneNumber || '',
-    gender: initialData?.gender || '',
+    gender: normalizeGender(initialData?.gender),
     age: initialData?.age || '',
     password: '',
     profile_picture: null,
@@ -70,7 +81,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
     <Modal isOpen={isOpen} onClose={onClose} title={isEdit ? "Edit User" : "Add New User"}>
       <Formik
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        validationSchema={buildValidationSchema(isEdit)}
         onSubmit={async (values) => {
           setSubmitError(null);
           setSubmitting(true);

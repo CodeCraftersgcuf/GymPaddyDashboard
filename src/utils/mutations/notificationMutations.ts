@@ -44,6 +44,32 @@ export const useSendBulkNotification = (options?: UseMutationOptions<any, Error,
   });
 };
 
+export const useMarkNotificationRead = (options?: UseMutationOptions<any, Error, string>) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiCall.post(API_ROUTES.NOTIFICATIONS.MARK_AS_READ(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    ...options,
+  });
+};
+
+export const useUpdateNotificationStatus = (options?: UseMutationOptions<any, Error, { id: string; status: string }>) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      apiCall.put(API_ROUTES.NOTIFICATIONS.UPDATE_STATUS(id), { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    ...options,
+  });
+};
+
 export const useDeleteNotification = (options?: UseMutationOptions<any, Error, string>) => {
   const queryClient = useQueryClient();
 

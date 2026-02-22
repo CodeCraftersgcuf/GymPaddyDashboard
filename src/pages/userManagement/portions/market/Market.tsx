@@ -8,6 +8,7 @@ import Vertical from '../../../../components/alignments/Vertical';
 import ItemAlign from '../../../../components/alignments/ItemAlign';
 import Dropdown from '../../../../components/Dropdown';
 import { boostedFilter, bulkFilter, dates } from '../../../../constants/FiltersData';
+import { exportToCsv } from '../../../../utils/exportCsv';
 import SearchFilter from '../../../../components/SearchFilter';
 import TableCan from '../../../../components/TableCan';
 import ListingRow from './components/ListingRow';
@@ -136,7 +137,7 @@ const Market: React.FC = () => {
             />
             <Dropdown
               options={bulkFilter}
-              onChange={(val) => console.log('Bulk:', val)}
+              onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredData, 'market_listings'); }}
               placeholder="Bulk Actions"
               position="left-0"
             />

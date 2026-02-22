@@ -32,6 +32,7 @@ export const API_ROUTES = {
     GET_ALL_POSTS: '/admin/social/posts',
     GET_POST_BY_ID: (id: string) => `/admin/social/posts/${id}`,
     GET_USER_POSTS: (userId: string) => `/admin/social/posts/user/${userId}`,
+    HIDE_POST: (id: string) => `/admin/social/posts/${id}/hide`,
     DELETE_POST: (id: string) => `/admin/social/posts/${id}`,
     GET_STATUSES: '/admin/social/statuses',
     GET_USER_STATUSES: (userId: string) => `/admin/social/statuses/user/${userId}`,
@@ -41,6 +42,7 @@ export const API_ROUTES = {
     GET_USER_LIVE_STREAMS: (userId: string) => `/admin/social/live/user/${userId}`,
     GET_LIVE_BY_ID: (id: string) => `/admin/social/live/${id}`,
     END_LIVE: (id: string) => `/admin/social/live/${id}/end`,
+    DELETE_LIVE: (id: string) => `/admin/social/live/${id}`,
     GET_STATS: '/admin/social/stats',
   },
 
@@ -122,6 +124,7 @@ export const API_ROUTES = {
     SEND: '/admin/notifications/send',
     SEND_BULK: '/admin/notifications/send-bulk',
     DELETE: (id: string) => `/admin/notifications/${id}`,
+    UPDATE_STATUS: (id: string) => `/admin/notifications/${id}`,
     MARK_AS_READ: (id: string) => `/admin/notifications/${id}/read`,
   },
 
@@ -129,6 +132,8 @@ export const API_ROUTES = {
     SOCIAL: (userId: string) => `/admin/user-management/social/${userId}`,
     MARKETPLACE: (userId: string) => `/admin/user-management/marketPlace/${userId}`,
     CHAT: (userId: string) => `/admin/user-management/chat/${userId}`,
+    CONVERSATION_MESSAGES: (conversationId: string) => `/admin/user-management/chat/conversation/${conversationId}`,
+    TICKET_DETAILS: (ticketId: string) => `/admin/user-management/chat/ticket/${ticketId}`,
     TRANSACTIONS: (userId: string) => `/admin/user-management/transactions/${userId}`,
   },
 
