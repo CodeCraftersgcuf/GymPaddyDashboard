@@ -7,8 +7,9 @@ import { bulkFilter, dates } from '../../../../../constants/FiltersData';
 import { exportToCsv } from '../../../../../utils/exportCsv';
 import SearchFilter from '../../../../../components/SearchFilter';
 import TableCan from '../../../../../components/TableCan';
-import {  StatusPostHeaders } from '../../../../../constants/Data';
+import { StatusPostHeaders } from '../../../../../constants/Data';
 import StatusPostRow from '../components/StatusPostRow';
+import Pagination from '../../../../../components/Pagination';
 
 interface props {
     data: any;
@@ -16,7 +17,10 @@ interface props {
 
 const StatusPortion: React.FC<props> = ({ data }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState<any[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 20;
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         let temp = [...(data || [])];
@@ -31,7 +35,23 @@ const StatusPortion: React.FC<props> = ({ data }) => {
         }
 
         setFilteredData(temp);
+        setCurrentPage(1);
+        setSelectedIds(new Set());
     }, [data, searchQuery]);
+
+    const totalItems = filteredData.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    const allSelected = paginatedData.length > 0 && paginatedData.every(item => selectedIds.has(String(item.id)));
+    const someSelected = paginatedData.some(item => selectedIds.has(String(item.id)));
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) setSelectedIds(new Set(paginatedData.map(item => String(item.id))));
+        else setSelectedIds(new Set());
+    };
+    const handleToggleRow = (id: string) => {
+        setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    };
 
     return (
         <Horizontal>
@@ -39,7 +59,7 @@ const StatusPortion: React.FC<props> = ({ data }) => {
                 <ItemAlign>
                     <Dropdown
                         options={dates}
-                        onChange={() => { }} // You can integrate real date filtering later
+                        onChange={() => {}}
                         placeholder="Date"
                         position="left-0"
                     />
@@ -56,8 +76,19 @@ const StatusPortion: React.FC<props> = ({ data }) => {
             </Vertical>
             <TableCan
                 headerTr={StatusPostHeaders}
-                dataTr={filteredData}
+                dataTr={paginatedData}
                 TrName={StatusPostRow}
+                allSelected={allSelected}
+                someSelected={someSelected}
+                onSelectAll={handleSelectAll}
+                TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
+            />
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
             />
         </Horizontal>
     );

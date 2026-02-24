@@ -20,10 +20,13 @@ interface Props {
     username?: string;
     createdAt?: string;
   };
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
-const StatusPostRow: React.FC<Props> = ({ displayData }) => {
+const StatusPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
   const [showStatus, setShowStatus] = useState(false);
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
   const deleteStatus = useDeleteStatus();
 
   const timeAgo = displayData.createdAt
@@ -42,8 +45,10 @@ const StatusPostRow: React.FC<Props> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
-        <td className="p-4"><input type="checkbox" className="form-checkbox" /></td>
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
+        <td className="p-4">
+          <input type="checkbox" checked={isSelected} onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }} className="cursor-pointer" />
+        </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img

@@ -146,7 +146,7 @@ const Social: React.FC = () => {
       <FilterTab
         tabs={tabs}
         handleValue={setActivePortion}
-        activeTab={tabs[0].name}
+        activeTab={activePortion}
       />
       {RenderComponent(
         activePortion, 

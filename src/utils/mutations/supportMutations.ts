@@ -12,6 +12,7 @@ export interface CreateTicketPayload {
 export interface UpdateTicketPayload {
   subject?: string;
   message?: string;
+  admin_reply?: string;
   status?: 'open' | 'in_progress' | 'closed';
   priority?: 'low' | 'medium' | 'high';
 }
@@ -51,6 +52,20 @@ export const useCloseTicket = (options?: UseMutationOptions<any, Error, string>)
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['support', 'tickets'] });
       queryClient.invalidateQueries({ queryKey: ['support', 'ticket', id] });
+    },
+    ...options,
+  });
+};
+
+export const useReplyToTicket = (options?: UseMutationOptions<any, Error, { id: string; reply: string }>) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, reply }: { id: string; reply: string }) =>
+      apiCall.post(API_ROUTES.SUPPORT.REPLY_TICKET(id), { reply }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['support', 'tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['support', 'ticket', variables.id] });
     },
     ...options,
   });

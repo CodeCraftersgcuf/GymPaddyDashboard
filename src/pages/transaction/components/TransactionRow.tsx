@@ -15,13 +15,16 @@ interface TransactionRowProps {
     profile_picture?: string | null;
     description?: string | null;
   };
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
 const formatAmount = (amount: number) =>
   Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
+const TransactionRow: React.FC<TransactionRowProps> = ({ displayData, selectedIds, onToggle }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
 
   const getStatusIcon = () => {
     switch (displayData.status) {
@@ -38,9 +41,14 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
         <td className="p-4">
-          <input type="checkbox" className="rounded border-gray-300" />
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }}
+            className="cursor-pointer rounded border-gray-300"
+          />
         </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">

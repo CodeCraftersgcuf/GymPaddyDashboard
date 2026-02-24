@@ -28,6 +28,7 @@ const Ads: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: ads, isLoading: adsLoading, error: adsError } = useGetAllAds();
   const { data: stats, isLoading: statsLoading } = useGetAdsStats();
@@ -64,6 +65,22 @@ const Ads: React.FC = () => {
 
     return temp;
   }, [ads, statusFilter, activeTab, dateFilter, searchTerm]);
+
+  const allSelected = filteredData.length > 0 && filteredData.every(item => selectedIds.has(String(item.id)));
+  const someSelected = filteredData.some(item => selectedIds.has(String(item.id)));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filteredData.map(item => String(item.id))));
+    else setSelectedIds(new Set());
+  };
+
+  const handleToggleRow = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const adsStatistics = stats ? [
     {
@@ -164,6 +181,10 @@ const Ads: React.FC = () => {
           headerTr={adsTableHeaders}
           dataTr={filteredData}
           TrName={AdsRow}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          onSelectAll={handleSelectAll}
+          TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
         />
       )}
     </Horizontal>

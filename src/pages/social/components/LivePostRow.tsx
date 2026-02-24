@@ -5,6 +5,7 @@ import Modal from '../../../components/Modal';
 import LiveView from './LiveView';
 import LiveStats from './LiveStats';
 import { avatarUrl, storageUrl, formatCreatedAt } from '../../../constants/help';
+import { useEndLiveStream, useDeleteLiveStream } from '../../../utils/mutations/socialMutations';
 
 interface Props {
   displayData: {
@@ -18,15 +19,21 @@ interface Props {
     username?: string;
     earned: string;
     status: 'Running' | 'Ended';
+    isActive?: boolean;
     date?: string;
     createdAt?: string;
     title?: string;
   };
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
-const LivePostRow: React.FC<Props> = ({ displayData }) => {
+const LivePostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
   const [showLive, setShowLive] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
+  const endStream = useEndLiveStream();
+  const deleteStream = useDeleteLiveStream();
 
   const handleViewStats = () => {
     setShowLive(false);
@@ -39,8 +46,15 @@ const LivePostRow: React.FC<Props> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
-        <td className="p-4"><input type="checkbox" className="form-checkbox" /></td>
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
+        <td className="p-4">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }}
+            className="cursor-pointer"
+          />
+        </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
@@ -77,11 +91,23 @@ const LivePostRow: React.FC<Props> = ({ displayData }) => {
             </button>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2">
-                  <AlertOctagonIcon size={20} color="black" /> End Stream
-                </button>
-                <button className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600">
-                  <AlertTriangleIcon size={20} color="red" /> Delete
+                {(displayData.isActive === true || displayData.status === 'Running') && (
+                  <button
+                    disabled={endStream.isPending}
+                    onClick={() => endStream.mutate(String(displayData.id))}
+                    className="py-3 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <AlertOctagonIcon size={20} color="black" />
+                    {endStream.isPending ? 'Ending…' : 'End Stream'}
+                  </button>
+                )}
+                <button
+                  disabled={deleteStream.isPending}
+                  onClick={() => { if (window.confirm('Delete this live stream?')) deleteStream.mutate(String(displayData.id)); }}
+                  className="py-3 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 text-red-600 disabled:opacity-50"
+                >
+                  <AlertTriangleIcon size={20} color="red" />
+                  {deleteStream.isPending ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             </MoreDropdown>

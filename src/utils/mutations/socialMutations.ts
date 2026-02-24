@@ -8,18 +8,24 @@ export const useHidePost = (options?: UseMutationOptions<any, Error, string | nu
   return useMutation({
     mutationFn: (id: string | number) => apiCall.post(API_ROUTES.SOCIAL.HIDE_POST(String(id))),
     onSuccess: (response: any, postId) => {
+      // The response from apiCall is already the unwrapped `data` object: { is_hidden: boolean }
       const newHiddenState = response?.is_hidden ?? response?.data?.is_hidden;
 
-      const updatePostsCache = (old: any[] | undefined) => {
+      // Optimistically update every cached posts list (all queries starting with ['social', 'posts'])
+      queryClient.setQueriesData({ queryKey: ['social', 'posts'] }, (old: any) => {
         if (!old) return old;
-        return old.map((post: any) =>
-          String(post.id) === String(postId)
-            ? { ...post, isHidden: newHiddenState, is_hidden: newHiddenState }
-            : post
-        );
-      };
+        // Handle both plain arrays and mapped post arrays
+        if (Array.isArray(old)) {
+          return old.map((post: any) =>
+            String(post.id) === String(postId)
+              ? { ...post, isHidden: newHiddenState, is_hidden: newHiddenState }
+              : post
+          );
+        }
+        return old;
+      });
 
-      queryClient.setQueriesData({ queryKey: ['social', 'posts'] }, updatePostsCache);
+      // Refetch to get fresh server state
       queryClient.invalidateQueries({ queryKey: ['social', 'posts'] });
     },
     ...options,

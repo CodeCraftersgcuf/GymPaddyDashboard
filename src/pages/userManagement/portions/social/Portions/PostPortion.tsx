@@ -6,7 +6,7 @@ import Dropdown from '../../../../../components/Dropdown';
 import { boostedFilter, dates, socialFilter } from '../../../../../constants/FiltersData';
 import SearchFilter from '../../../../../components/SearchFilter';
 import TableCan from '../../../../../components/TableCan';
-import {  UserPostHeaders } from '../../../../../constants/Data';
+import { UserPostHeaders } from '../../../../../constants/Data';
 import UserPostRow from '../components/UserPostRow';
 import Pagination from '../../../../../components/Pagination';
 
@@ -20,7 +20,8 @@ const PostPortion: React.FC<props> = ({ data }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 20;
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState<any[]>([]);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         let temp = [...(data || [])];
@@ -31,12 +32,13 @@ const PostPortion: React.FC<props> = ({ data }) => {
             temp = temp.filter((item) => item.boostStatus?.toLowerCase() === 'no');
         }
 
+        // Sort by engagement metric so all results remain visible
         if (type === 'comment') {
-            temp = temp.filter((item) => Number(item.comments || 0) > 0);
+            temp = [...temp].sort((a, b) => Number(b.comments || 0) - Number(a.comments || 0));
         } else if (type === 'like') {
-            temp = temp.filter((item) => Number(item.like ?? item.likes ?? 0) > 0);
+            temp = [...temp].sort((a, b) => Number(b.like ?? b.likes ?? 0) - Number(a.like ?? a.likes ?? 0));
         } else if (type === 'replies') {
-            temp = temp.filter((item) => Number(item.replies || 0) > 0);
+            temp = [...temp].sort((a, b) => Number(b.replies ?? b.shares ?? 0) - Number(a.replies ?? a.shares ?? 0));
         }
 
         if (searchQuery.trim() !== '') {
@@ -50,11 +52,22 @@ const PostPortion: React.FC<props> = ({ data }) => {
 
         setFilteredData(temp);
         setCurrentPage(1);
+        setSelectedIds(new Set());
     }, [data, boosted, type, searchQuery]);
 
     const totalItems = (filteredData || []).length;
     const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
     const paginatedData = (filteredData || []).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    const allSelected = paginatedData.length > 0 && paginatedData.every(item => selectedIds.has(String(item.id)));
+    const someSelected = paginatedData.some(item => selectedIds.has(String(item.id)));
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) setSelectedIds(new Set(paginatedData.map(item => String(item.id))));
+        else setSelectedIds(new Set());
+    };
+    const handleToggleRow = (id: string) => {
+        setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    };
 
     return (
         <Horizontal>
@@ -62,7 +75,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
                 <ItemAlign>
                     <Dropdown
                         options={dates}
-                        onChange={() => { }} // You can integrate real date filtering later
+                        onChange={() => {}}
                         placeholder="Date"
                         position="left-0"
                     />
@@ -77,6 +90,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
                         options={socialFilter}
                         onChange={(val: string) => setType(val)}
                         placeholder="Type"
+                        defaultValue="all"
                         position="left-0"
                     />
                 </ItemAlign>
@@ -88,16 +102,18 @@ const PostPortion: React.FC<props> = ({ data }) => {
                 headerTr={UserPostHeaders}
                 dataTr={paginatedData}
                 TrName={UserPostRow}
+                allSelected={allSelected}
+                someSelected={someSelected}
+                onSelectAll={handleSelectAll}
+                TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
             />
-            {totalItems > ITEMS_PER_PAGE && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                    onPageChange={setCurrentPage}
-                />
-            )}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+            />
         </Horizontal>
     );
 };

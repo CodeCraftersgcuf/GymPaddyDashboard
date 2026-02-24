@@ -5,6 +5,8 @@ import { storageUrl } from '../../../../../constants/help';
 
 interface Props {
   displayData: any;
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
 const formatPrice = (price: number | string) => {
@@ -13,9 +15,10 @@ const formatPrice = (price: number | string) => {
   return '₦' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-const ListingRow: React.FC<Props> = ({ displayData }) => {
+const ListingRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
 
   const handleShowStats = () => {
     setShowDetails(false);
@@ -31,9 +34,9 @@ const ListingRow: React.FC<Props> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
         <td className="p-4">
-          <input type="checkbox" />
+          <input type="checkbox" checked={isSelected} onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }} className="cursor-pointer" />
         </td>
         <td className="p-4">
           {imageUrl ? (

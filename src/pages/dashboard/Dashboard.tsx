@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Horizontal from "../../components/alignments/Horizontal";
 import StatsCard from "../../components/StatsCard";
@@ -17,6 +17,29 @@ const Dashboard: React.FC = () => {
   const { data: stats, isLoading: statsLoading, error: statsError } = useGetDashboardStats();
   const { data: latestUsers, isLoading: usersLoading, error: usersError } = useGetLatestUsers();
   const { data: latestPosts, isLoading: postsLoading, error: postsError } = useGetLatestPosts();
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const usersData = latestUsers ?? [];
+  const allSelected = usersData.length > 0 && usersData.every((u) => selectedIds.has(String(u.id)));
+  const someSelected = usersData.some((u) => selectedIds.has(String(u.id)));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(usersData.map((u) => String(u.id))));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const sid = String(id);
+      next.has(sid) ? next.delete(sid) : next.add(sid);
+      return next;
+    });
+  };
 
   // Transform stats data to match StatsCard format
   const dashboardStatics = stats ? [
@@ -136,6 +159,13 @@ const Dashboard: React.FC = () => {
             ]}
             dataTr={latestUsers}
             TrName={LatestUserRow}
+            allSelected={allSelected}
+            someSelected={someSelected}
+            onSelectAll={handleSelectAll}
+            TrPropsName={{
+              selectedIds,
+              onToggle: handleToggleRow,
+            }}
           />
         ) : (
           <div className="p-4 bg-white rounded-lg shadow-lg border border-gray-300 text-center text-gray-500">

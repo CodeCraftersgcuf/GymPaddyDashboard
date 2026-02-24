@@ -21,6 +21,7 @@ export interface SocialPost {
   shares: number;
   replies?: number;
   isBoosted?: boolean;
+  isHidden?: boolean;
   createdAt: string;
   date?: string;
   boostStatus?: string;
@@ -57,6 +58,7 @@ export interface LiveStreamItem {
   likes: number;
   earned: string;
   status: 'Running' | 'Ended';
+  isActive?: boolean;
   date?: string;
   createdAt: string;
 }
@@ -91,6 +93,7 @@ export const useGetAllPosts = (options?: UseQueryOptions<SocialPost[]>) => {
         date: post.date || (post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''),
         boostStatus: post.boostStatus || 'No',
         postType: post.postType || (post.images && post.images.length > 0 ? 'Image' : 'Text'),
+        isHidden: post.isHidden ?? (post as any).is_hidden ?? false,
       }));
     },
     ...options,

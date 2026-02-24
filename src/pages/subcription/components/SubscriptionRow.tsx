@@ -4,6 +4,7 @@ import Button from '../../../components/Buttons/Button';
 
 interface BusinessRowProps {
   displayData: {
+    id?: number;
     user: {
       username: string;
       profile_picture: string | null;
@@ -14,6 +15,8 @@ interface BusinessRowProps {
     created_at: string;
     document: string;
   };
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
 const statusColor = {
@@ -21,13 +24,14 @@ const statusColor = {
   inactive: 'bg-red-500'
 };
 
-const SubscriptionRow: React.FC<BusinessRowProps> = ({ displayData }) => {
+const SubscriptionRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds, onToggle }) => {
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
         <td className="p-2 py-4 px-4 w-10">
-          <input type="checkbox" />
+          <input type="checkbox" checked={isSelected} onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }} className="cursor-pointer" />
         </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">

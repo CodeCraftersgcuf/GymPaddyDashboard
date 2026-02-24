@@ -22,9 +22,26 @@ export const useGetAllNotifications = (options?: UseQueryOptions<Notification[]>
   return useQuery<Notification[]>({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const response = await apiCall.get<{ notifications: Notification[] } | Notification[]>(API_ROUTES.NOTIFICATIONS.GET_ALL);
-      if (Array.isArray(response)) return response;
-      return Array.isArray(response.notifications) ? response.notifications : [];
+      const allNotifications: Notification[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      do {
+        const response = await apiCall.get<
+          { notifications?: Notification[]; pagination?: { totalPages?: number } } | Notification[]
+        >(`${API_ROUTES.NOTIFICATIONS.GET_ALL}?page=${page}&limit=200`);
+
+        if (Array.isArray(response)) {
+          allNotifications.push(...response);
+          totalPages = 1;
+        } else {
+          allNotifications.push(...(response.notifications || []));
+          totalPages = response.pagination?.totalPages || 1;
+        }
+        page += 1;
+      } while (page <= totalPages);
+
+      return allNotifications;
     },
     ...options,
   });
@@ -43,11 +60,26 @@ export const useGetBroadcastHistory = (options?: UseQueryOptions<Notification[]>
   return useQuery<Notification[]>({
     queryKey: ['broadcast-history'],
     queryFn: async () => {
-      const response = await apiCall.get<{ notifications: Notification[] } | Notification[]>(
-        API_ROUTES.NOTIFICATIONS.GET_BROADCAST_HISTORY
-      );
-      if (Array.isArray(response)) return response;
-      return Array.isArray((response as any).notifications) ? (response as any).notifications : [];
+      const allBroadcasts: Notification[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      do {
+        const response = await apiCall.get<
+          { notifications?: Notification[]; pagination?: { totalPages?: number } } | Notification[]
+        >(`${API_ROUTES.NOTIFICATIONS.GET_BROADCAST_HISTORY}&page=${page}&limit=200`);
+
+        if (Array.isArray(response)) {
+          allBroadcasts.push(...response);
+          totalPages = 1;
+        } else {
+          allBroadcasts.push(...(response.notifications || []));
+          totalPages = response.pagination?.totalPages || 1;
+        }
+        page += 1;
+      } while (page <= totalPages);
+
+      return allBroadcasts;
     },
     ...options,
   });

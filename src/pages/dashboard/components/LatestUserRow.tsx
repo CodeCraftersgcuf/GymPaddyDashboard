@@ -4,7 +4,7 @@ import { avatarUrl } from '../../../constants/help';
 
 interface UserRowProps {
     displayData: {
-        id?: number;
+        id?: number | string;
         fullName: string;
         username: string;
         email: string;
@@ -13,16 +13,22 @@ interface UserRowProps {
         lastLogin: string;
         profileImage?: string | null;
     };
-}
-interface props {
-    displayData: UserRowProps['displayData']
+    selectedIds?: Set<string>;
+    onToggle?: (id: string) => void;
 }
 
-const LatestUserRow: React.FC<props> = ({ displayData }) => {
+const LatestUserRow: React.FC<UserRowProps> = ({ displayData, selectedIds, onToggle }) => {
+    const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
+
     return (
-        <tr className="hover:bg-gray-100 transition cursor-pointer relative">
+        <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
             <td className="p-2 py-4 px-4 w-10">
-                <input type="checkbox" />
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }}
+                    className="cursor-pointer"
+                />
             </td>
             <td className="p-2 py-4">
                 <div className="flex items-center gap-2">
@@ -37,7 +43,7 @@ const LatestUserRow: React.FC<props> = ({ displayData }) => {
             <td className="p-2 py-4">{displayData.username}</td>
             <td className="p-2 py-4">{displayData.email}</td>
             <td className="p-2 py-4">{displayData.phoneNumber}</td>
-            <td className="p-2 py-4 ">{displayData.age}</td>
+            <td className="p-2 py-4">{displayData.age}</td>
             <td className="p-2 py-4">{displayData.lastLogin}</td>
             <td className="p-2 py-4">
                 {displayData.username ? (

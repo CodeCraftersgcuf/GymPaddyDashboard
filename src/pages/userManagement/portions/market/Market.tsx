@@ -28,6 +28,7 @@ const Market: React.FC = () => {
   const [boostStatus, setBoostStatus] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const { data: user, isLoading: userLoading } = useGetUserByUsername(username || '');
   const { data: listings, isLoading: listingsLoading, error: listingsError } = useGetUserListings(user?.id?.toString() || '');
@@ -62,6 +63,16 @@ const Market: React.FC = () => {
 
     return temp;
   }, [listings, boostStatus, activeTab, dateFilter, searchTerm]);
+
+  const allSelected = filteredData.length > 0 && filteredData.every(item => selectedIds.has(String(item.id)));
+  const someSelected = filteredData.some(item => selectedIds.has(String(item.id)));
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filteredData.map(item => String(item.id))));
+    else setSelectedIds(new Set());
+  };
+  const handleToggleRow = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
   
   const marketStats = listings ? [
     {
@@ -158,6 +169,10 @@ const Market: React.FC = () => {
             headerTr={ListingTableHeaders}
             dataTr={filteredData}
             TrName={ListingRow}
+            allSelected={allSelected}
+            someSelected={someSelected}
+            onSelectAll={handleSelectAll}
+            TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
           />
         )}
       </Horizontal>

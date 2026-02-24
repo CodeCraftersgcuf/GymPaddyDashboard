@@ -7,11 +7,14 @@ import type { Ad } from '../../../utils/queries/adsQueries';
 
 interface AdsRowProps {
   displayData: Ad;
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
-const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
+const AdsRow: React.FC<AdsRowProps> = ({ displayData, selectedIds, onToggle }) => {
   const [showListingDetails, setShowListingDetails] = useState(false);
   const [showAdStats, setShowAdStats] = useState(false);
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -25,9 +28,14 @@ const AdsRow: React.FC<AdsRowProps> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-50 transition cursor-pointer">
+      <tr className={`hover:bg-gray-50 transition cursor-pointer ${isSelected ? 'bg-red-50' : ''}`}>
         <td className="p-4">
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }}
+            className="cursor-pointer"
+          />
         </td>
         <td className="p-4">
           <div className="flex items-center gap-2">

@@ -10,9 +10,12 @@ import { useHidePost, useDeletePost } from '../../../../../utils/mutations/socia
 
 interface Props {
   displayData: any;
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
-const UserPostRow: React.FC<Props> = ({ displayData }) => {
+const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
   const [showBoostStats, setShowBoostStats] = useState(false);
   const [showPost, setShowPost] = useState(false);
   const hidePost = useHidePost();
@@ -38,8 +41,10 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
-        <td className="p-4"><input type="checkbox" /></td>
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : displayData.isHidden ? 'bg-gray-50 opacity-70' : ''}`}>
+        <td className="p-4">
+          <input type="checkbox" checked={isSelected} onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }} className="cursor-pointer" />
+        </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">
             <img
@@ -47,7 +52,12 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
               alt="profile"
               className="w-10 h-10 rounded-full object-cover"
             />
-            {displayData.fullName || displayData.username || 'Unknown'}
+            <span>
+              {displayData.fullName || displayData.username || 'Unknown'}
+              {displayData.isHidden && (
+                <span className="ml-2 inline-block text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-medium">Hidden</span>
+              )}
+            </span>
           </div>
         </td>
         <td className="p-4 max-w-[200px] truncate">{displayData.post || displayData.content || '—'}</td>
@@ -66,9 +76,12 @@ const UserPostRow: React.FC<Props> = ({ displayData }) => {
                 <button
                   onClick={handleHide}
                   disabled={hidePost.isPending}
-                  className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 disabled:opacity-50"
+                  className="py-2 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 disabled:opacity-50 py-4"
                 >
-                  <AlertOctagonIcon size={20} color="black" /> {hidePost.isPending ? (displayData.isHidden ? 'Unhiding...' : 'Hiding...') : (displayData.isHidden ? 'Unhide Post' : 'Hide Post')}
+                  <AlertOctagonIcon size={20} color="black" />
+                  {hidePost.isPending
+                    ? (displayData.isHidden ? 'Unhiding...' : 'Hiding...')
+                    : (displayData.isHidden ? 'Unhide Post' : 'Hide Post')}
                 </button>
                 <button
                   onClick={handleDelete}

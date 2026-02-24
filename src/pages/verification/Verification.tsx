@@ -62,12 +62,12 @@ const Verification: React.FC = () => {
     });
   }, [verifications, activeTab, selectedDate]);
 
-  const allSelected = filteredData.length > 0 && filteredData.every((item) => selectedIds.has(item.id));
-  const someSelected = filteredData.some((item) => selectedIds.has(item.id));
+  const allSelected = filteredData.length > 0 && filteredData.every((item) => selectedIds.has(String(item.id)));
+  const someSelected = filteredData.some((item) => selectedIds.has(String(item.id)));
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(new Set(filteredData.map((item) => item.id)));
+      setSelectedIds(new Set(filteredData.map((item) => String(item.id))));
     } else {
       setSelectedIds(new Set());
     }
@@ -76,7 +76,8 @@ const Verification: React.FC = () => {
   const handleToggleRow = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      const sid = String(id);
+      next.has(sid) ? next.delete(sid) : next.add(sid);
       return next;
     });
   };

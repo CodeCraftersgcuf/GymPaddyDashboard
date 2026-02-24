@@ -7,7 +7,8 @@ export interface SupportTicket {
   user_id: number;
   subject: string;
   message: string;
-  status: 'open' | 'in_progress' | 'closed';
+  admin_reply?: string | null;
+  status: 'open' | 'pending' | 'in_progress' | 'closed';
   priority?: 'low' | 'medium' | 'high';
   created_at: string;
   updated_at: string;
@@ -22,9 +23,13 @@ export const useGetAllTickets = (options?: UseQueryOptions<SupportTicket[]>) => 
   return useQuery<SupportTicket[]>({
     queryKey: ['support', 'tickets'],
     queryFn: async () => {
-      const response = await apiCall.get<{ tickets: SupportTicket[] } | SupportTicket[]>(API_ROUTES.SUPPORT.GET_ALL_TICKETS);
+      const response = await apiCall.get<
+        { tickets?: SupportTicket[]; data?: { tickets?: SupportTicket[] } } | SupportTicket[]
+      >(API_ROUTES.SUPPORT.GET_ALL_TICKETS);
       if (Array.isArray(response)) return response;
-      return Array.isArray(response.tickets) ? response.tickets : [];
+      if (Array.isArray(response?.tickets)) return response.tickets;
+      if (Array.isArray(response?.data?.tickets)) return response.data.tickets;
+      return [];
     },
     ...options,
   });

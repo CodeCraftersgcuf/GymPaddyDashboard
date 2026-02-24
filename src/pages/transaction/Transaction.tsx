@@ -22,6 +22,7 @@ const Transaction: React.FC = () => {
   const [transactionStatus, setTransactionStatus] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useGetAllTransactions();
   const { data: stats, isLoading: statsLoading } = useGetTransactionStats();
@@ -51,6 +52,16 @@ const Transaction: React.FC = () => {
       return matchesTab && matchesStatus && matchesSearch && matchesDate;
     });
   }, [transactions, activeTab, transactionStatus, dateFilter, searchQuery]);
+
+  const allSelected = filteredData.length > 0 && filteredData.every(item => selectedIds.has(String(item.id)));
+  const someSelected = filteredData.some(item => selectedIds.has(String(item.id)));
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filteredData.map(item => String(item.id))));
+    else setSelectedIds(new Set());
+  };
+  const handleToggleRow = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
 
   const revenueStats = stats ? [
     {
@@ -161,6 +172,10 @@ const Transaction: React.FC = () => {
           TrName={TransactionRow}
           dataTr={filteredData}
           headerTr={['Name','transaction id', 'amount', 'status', 'date', 'actions']}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          onSelectAll={handleSelectAll}
+          TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
         />
       )}
     </Horizontal>

@@ -23,6 +23,7 @@ const getDaysDifference = (dateStr: string) => {
 const Subcription: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedDate, setSelectedDate] = useState('today');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: subscriptions, isLoading: subscriptionsLoading, error: subscriptionsError } = useGetAllSubscriptions();
   const { data: stats, isLoading: statsLoading } = useGetSubscriptionStats();
@@ -55,6 +56,16 @@ const Subcription: React.FC = () => {
       return statusMatch && dateMatch;
     });
   }, [subscriptions, activeTab, selectedDate]);
+
+  const allSelected = filteredData.length > 0 && filteredData.every(item => selectedIds.has(String(item.id)));
+  const someSelected = filteredData.some(item => selectedIds.has(String(item.id)));
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedIds(new Set(filteredData.map(item => String(item.id))));
+    else setSelectedIds(new Set());
+  };
+  const handleToggleRow = (id: string) => {
+    setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
 
   const subscriptionStatics = stats ? [
     {
@@ -134,6 +145,10 @@ const Subcription: React.FC = () => {
           headerTr={["Name", "Plan", "Amount", "Status", "Date", "Action"]}
           dataTr={filteredData}
           TrName={SubscriptionRow}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          onSelectAll={handleSelectAll}
+          TrPropsName={{ selectedIds, onToggle: handleToggleRow }}
         />
       )}
     </Horizontal>

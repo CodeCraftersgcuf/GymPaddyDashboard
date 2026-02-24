@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 
 interface TableCanProps<T> {
     heading?: string;
@@ -25,6 +25,15 @@ const TableCan = <T,>({
     someSelected = false,
     onSelectAll,
 }: TableCanProps<T>) => {
+    const checkboxRef = useRef<HTMLInputElement>(null);
+
+    // Keep the native indeterminate property in sync on every render
+    useEffect(() => {
+        if (checkboxRef.current) {
+            checkboxRef.current.indeterminate = someSelected && !allSelected;
+        }
+    }, [someSelected, allSelected]);
+
     return (
         <div className="rounded-xl bg-white shadow-md shadow-gray-400 ">
             {showHeading && (
@@ -38,9 +47,9 @@ const TableCan = <T,>({
                         <tr>
                             <th className="p-2 py-4 w-10">
                                 <input
+                                    ref={checkboxRef}
                                     type="checkbox"
                                     checked={allSelected}
-                                    ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
                                     onChange={(e) => onSelectAll?.(e.target.checked)}
                                     className="cursor-pointer"
                                 />
@@ -63,7 +72,7 @@ const TableCan = <T,>({
                             })
                         ) : (
                             <tr>
-                                <td colSpan={headerTr.length} className="text-center py-2 px-4">
+                                <td colSpan={headerTr.length + 1} className="text-center py-2 px-4">
                                     No Data Found
                                 </td>
                             </tr>

@@ -30,7 +30,7 @@ const statusColor: Record<string, string> = {
 
 const VerificationRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds, onToggle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isSelected = selectedIds?.has(displayData.id) ?? false;
+  const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
 
   return (
     <>
@@ -39,7 +39,7 @@ const VerificationRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds,
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onToggle?.(displayData.id)}
+            onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }}
             className="cursor-pointer"
           />
         </td>

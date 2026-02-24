@@ -142,6 +142,7 @@ export const API_ROUTES = {
     GET_TICKET_BY_ID: (id: string) => `/admin/support/tickets/${id}`,
     CREATE_TICKET: '/admin/support/tickets',
     UPDATE_TICKET: (id: string) => `/admin/support/tickets/${id}`,
+    REPLY_TICKET: (id: string) => `/admin/support/tickets/${id}/reply`,
     CLOSE_TICKET: (id: string) => `/admin/support/tickets/${id}/close`,
   },
 
