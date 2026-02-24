@@ -15,7 +15,7 @@ import TableCan from "../../../components/TableCan";
 import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
 import Pagination from "../../../components/Pagination";
-import { useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
+import { fetchAllUsersForExport, useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
 import { useCreateUser } from "../../../utils/mutations/userMutations";
 import images from "../../../constants/images";
 
@@ -97,6 +97,21 @@ const UserManagementConnect: React.FC = () => {
     });
   }, [users, statusFilter, searchQuery]);
 
+  const handleBulkAction = async (value: string) => {
+    if (value !== 'ExportASCSV') return;
+
+    try {
+      const exportUsers = await fetchAllUsersForExport({
+        status: statusFilter,
+        search: searchQuery,
+      });
+      exportToCsv(exportUsers, 'users');
+    } catch (error) {
+      console.error('Failed to export users CSV:', error);
+      window.alert('Failed to export users. Please try again.');
+    }
+  };
+
   return (
     <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -125,7 +140,7 @@ const UserManagementConnect: React.FC = () => {
           />
           <Dropdown
             options={bulkFilter}
-            onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredUsers, 'users'); }}
+            onChange={handleBulkAction}
             placeholder="Bulk Actions"
             position="left-0"
           />

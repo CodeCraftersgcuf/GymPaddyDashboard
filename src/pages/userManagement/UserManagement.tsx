@@ -15,7 +15,7 @@ import UserRow from "./components/UserRow";
 import UserFormModal from "./components/AddUserModal";
 import StatsCardSkeleton from "../../components/StatsCardSkeleton";
 import TableSkeleton from "../../components/TableSkeleton";
-import { useGetAllUsers, useGetUserStats } from "../../utils/queries/userQueries";
+import { fetchAllUsersForExport, useGetAllUsers, useGetUserStats } from "../../utils/queries/userQueries";
 import { useCreateUser } from "../../utils/mutations/userMutations";
 import images from "../../constants/images";
 
@@ -35,8 +35,25 @@ const UserManagement: React.FC = () => {
   const users = data?.users || [];
   const pagination = data?.pagination;
 
-  const handleBulkAction = (value: string) => {
-    if (value === 'ExportASCSV') exportToCsv(filteredUsers, 'users');
+  const handleBulkAction = async (value: string) => {
+    if (value !== 'ExportASCSV') return;
+
+    try {
+      if (selectedIds.size > 0) {
+        const selectedUsers = filteredUsers.filter((user) => selectedIds.has(user.id));
+        exportToCsv(selectedUsers, 'users');
+        return;
+      }
+
+      const allUsers = await fetchAllUsersForExport({
+        status: statusFilter,
+        search: searchQuery,
+      });
+      exportToCsv(allUsers, 'users');
+    } catch (error) {
+      console.error('Failed to export users CSV:', error);
+      window.alert('Failed to export users. Please try again.');
+    }
   };
 
   const handleOnlineStatus = (value: string) => {

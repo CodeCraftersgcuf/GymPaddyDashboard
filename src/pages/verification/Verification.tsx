@@ -23,6 +23,7 @@ const getDaysDifference = (dateStr: string) => {
 const Verification: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: verifications, isLoading: verificationsLoading, error: verificationsError } = useGetAllVerifications();
   const { data: stats, isLoading: statsLoading } = useGetVerificationStats();
@@ -60,6 +61,25 @@ const Verification: React.FC = () => {
       return statusMatch && dateMatch;
     });
   }, [verifications, activeTab, selectedDate]);
+
+  const allSelected = filteredData.length > 0 && filteredData.every((item) => selectedIds.has(item.id));
+  const someSelected = filteredData.some((item) => selectedIds.has(item.id));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredData.map((item) => item.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const verificationsStatics = stats ? [
     {
@@ -139,6 +159,13 @@ const Verification: React.FC = () => {
           headerTr={["Name", "Business Name", "Category", "Status", "Date", "Action"]}
           dataTr={filteredData}
           TrName={VerificationRow}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          onSelectAll={handleSelectAll}
+          TrPropsName={{
+            selectedIds,
+            onToggle: handleToggleRow,
+          }}
         />
       )}
     </Horizontal>

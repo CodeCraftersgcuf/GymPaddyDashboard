@@ -18,6 +18,8 @@ interface BusinessRowProps {
     userPhone: string;
     photo?: string | null;
   };
+  selectedIds?: Set<string>;
+  onToggle?: (id: string) => void;
 }
 
 const statusColor: Record<string, string> = {
@@ -26,14 +28,20 @@ const statusColor: Record<string, string> = {
   rejected: 'bg-red-500',
 };
 
-const VerificationRow: React.FC<BusinessRowProps> = ({ displayData }) => {
+const VerificationRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds, onToggle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isSelected = selectedIds?.has(displayData.id) ?? false;
 
   return (
     <>
-      <tr className="hover:bg-gray-100 transition cursor-pointer relative">
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : ''}`}>
         <td className="p-2 py-4 px-4 w-10">
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggle?.(displayData.id)}
+            className="cursor-pointer"
+          />
         </td>
         <td className="p-2 py-4">
           <div className="flex items-center gap-2">

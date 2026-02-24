@@ -15,7 +15,7 @@ import TableCan from "../../../components/TableCan";
 import UserRow from "../../userManagement/components/UserRow";
 import UserFormModal from "../../userManagement/components/AddUserModal";
 import Pagination from "../../../components/Pagination";
-import { useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
+import { fetchAllUsersForExport, useGetUserStatsBySection, useGetAllUsers } from "../../../utils/queries/userQueries";
 import { useCreateUser } from "../../../utils/mutations/userMutations";
 import images from "../../../constants/images";
 
@@ -26,6 +26,7 @@ const UserManagementSocial: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
   const { data: usersPage, isLoading: usersLoading } = useGetAllUsers(currentPage, ITEMS_PER_PAGE);
@@ -102,6 +103,46 @@ const UserManagementSocial: React.FC = () => {
     setModalOpen(false);
   };
 
+  const handleBulkAction = async (value: string) => {
+    if (value !== 'ExportASCSV') return;
+
+    try {
+      if (selectedIds.size > 0) {
+        const selectedUsers = filteredUsers.filter((user) => selectedIds.has(user.id));
+        exportToCsv(selectedUsers, 'users');
+        return;
+      }
+
+      const allUsers = await fetchAllUsersForExport({
+        status: statusFilter,
+        search: searchQuery,
+      });
+      exportToCsv(allUsers, 'users');
+    } catch (error) {
+      console.error('Failed to export users CSV:', error);
+      window.alert('Failed to export users. Please try again.');
+    }
+  };
+
+  const allSelected = filteredUsers.length > 0 && filteredUsers.every((u) => selectedIds.has(u.id));
+  const someSelected = filteredUsers.some((u) => selectedIds.has(u.id));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredUsers.map((u) => u.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleToggleRow = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   return (
     <Horizontal>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -124,20 +165,20 @@ const UserManagementSocial: React.FC = () => {
         <ItemAlign>
           <Dropdown
             options={UserActiveStatus}
-            onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+            onChange={(val) => { setStatusFilter(val); setCurrentPage(1); setSelectedIds(new Set()); }}
             placeholder="Status"
             position="left-0"
           />
           <Dropdown
             options={bulkFilter}
-            onChange={(val) => { if (val === 'ExportASCSV') exportToCsv(filteredUsers, 'users'); }}
+            onChange={handleBulkAction}
             placeholder="Bulk Actions"
             position="left-0"
           />
         </ItemAlign>
         <ItemAlign>
           <Button handleFunction={() => setModalOpen(true)}>Add New User</Button>
-          <SearchFilter handleFunction={(val) => { setSearchQuery(val); setCurrentPage(1); }} />
+          <SearchFilter handleFunction={(val) => { setSearchQuery(val); setCurrentPage(1); setSelectedIds(new Set()); }} />
         </ItemAlign>
       </Vertical>
 
@@ -149,6 +190,13 @@ const UserManagementSocial: React.FC = () => {
             headerTr={userTableHeaders}
             dataTr={filteredUsers}
             TrName={UserRow}
+            allSelected={allSelected}
+            someSelected={someSelected}
+            onSelectAll={handleSelectAll}
+            TrPropsName={{
+              selectedIds,
+              onToggle: handleToggleRow,
+            }}
           />
           {pagination && (
             <Pagination
@@ -156,7 +204,7 @@ const UserManagementSocial: React.FC = () => {
               totalPages={pagination.totalPages}
               totalItems={pagination.totalItems}
               itemsPerPage={pagination.itemsPerPage}
-              onPageChange={(page) => setCurrentPage(page)}
+              onPageChange={(page) => { setCurrentPage(page); setSelectedIds(new Set()); }}
             />
           )}
         </>

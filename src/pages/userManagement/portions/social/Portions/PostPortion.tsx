@@ -8,6 +8,7 @@ import SearchFilter from '../../../../../components/SearchFilter';
 import TableCan from '../../../../../components/TableCan';
 import {  UserPostHeaders } from '../../../../../constants/Data';
 import UserPostRow from '../components/UserPostRow';
+import Pagination from '../../../../../components/Pagination';
 
 interface props {
     data: any;
@@ -17,6 +18,8 @@ const PostPortion: React.FC<props> = ({ data }) => {
     const [boosted, setBoosted] = useState('all');
     const [type, setType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 20;
     const [filteredData, setFilteredData] = useState(data);
 
     useEffect(() => {
@@ -28,8 +31,12 @@ const PostPortion: React.FC<props> = ({ data }) => {
             temp = temp.filter((item) => item.boostStatus?.toLowerCase() === 'no');
         }
 
-        if (type !== 'all') {
-            temp = temp.filter((item) => item.postType?.toLowerCase() === type);
+        if (type === 'comment') {
+            temp = temp.filter((item) => Number(item.comments || 0) > 0);
+        } else if (type === 'like') {
+            temp = temp.filter((item) => Number(item.like ?? item.likes ?? 0) > 0);
+        } else if (type === 'replies') {
+            temp = temp.filter((item) => Number(item.replies || 0) > 0);
         }
 
         if (searchQuery.trim() !== '') {
@@ -42,7 +49,12 @@ const PostPortion: React.FC<props> = ({ data }) => {
         }
 
         setFilteredData(temp);
+        setCurrentPage(1);
     }, [data, boosted, type, searchQuery]);
+
+    const totalItems = (filteredData || []).length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+    const paginatedData = (filteredData || []).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     return (
         <Horizontal>
@@ -74,9 +86,18 @@ const PostPortion: React.FC<props> = ({ data }) => {
             </Vertical>
             <TableCan
                 headerTr={UserPostHeaders}
-                dataTr={filteredData}
+                dataTr={paginatedData}
                 TrName={UserPostRow}
             />
+            {totalItems > ITEMS_PER_PAGE && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    onPageChange={setCurrentPage}
+                />
+            )}
         </Horizontal>
     );
 };

@@ -42,6 +42,12 @@ export interface UsersPage {
   pagination: PaginationMeta;
 }
 
+interface FetchAllUsersForExportParams {
+  status?: string;
+  search?: string;
+  limit?: number;
+}
+
 export const useGetAllUsers = (page = 1, limit = 20, options?: UseQueryOptions<UsersPage>) => {
   return useQuery<UsersPage>({
     queryKey: ['users', page, limit],
@@ -56,6 +62,43 @@ export const useGetAllUsers = (page = 1, limit = 20, options?: UseQueryOptions<U
     },
     ...options,
   });
+};
+
+export const fetchAllUsersForExport = async ({
+  status,
+  search,
+  limit = 200,
+}: FetchAllUsersForExportParams = {}): Promise<User[]> => {
+  const allUsers: User[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+
+    if (status && status !== 'all') {
+      params.set('status', status);
+    }
+    if (search && search.trim()) {
+      params.set('search', search.trim());
+    }
+
+    const response = await apiCall.get<UsersPage>(
+      `${API_ROUTES.USERS.GET_ALL}?${params.toString()}`
+    );
+
+    const pageUsers = response.users || [];
+    const pagination = response.pagination || { totalPages: 1 };
+
+    allUsers.push(...pageUsers);
+    totalPages = pagination.totalPages || 1;
+    page += 1;
+  } while (page <= totalPages);
+
+  return allUsers;
 };
 
 export const useGetUserById = (id: string, options?: UseQueryOptions<User>) => {
