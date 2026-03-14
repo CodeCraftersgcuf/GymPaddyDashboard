@@ -50,6 +50,7 @@ const MoreDropdown: React.FC<MoreDropdownProps> = ({
       {isOpen && (
         <div
           className={`absolute top-[88%] mt-2 z-40 right-0 overflow-hidden shadow-md shadow-gray-900 rounded-md ${menuClass}`}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           {children ? (
             <div className="">{children}</div>

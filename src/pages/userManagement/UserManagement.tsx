@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { exportToCsv } from "../../utils/exportCsv";
 import Horizontal from "../../components/alignments/Horizontal";
 import { userTableHeaders } from "../../constants/Data";
@@ -28,7 +28,10 @@ const UserManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
-  const { data, isLoading: usersLoading, error: usersError } = useGetAllUsers(currentPage, ITEMS_PER_PAGE);
+  const { data, isLoading: usersLoading, error: usersError } = useGetAllUsers(currentPage, ITEMS_PER_PAGE, {
+    search: searchQuery,
+    status: statusFilter,
+  });
   const { data: stats, isLoading: statsLoading } = useGetUserStats();
   const createUserMutation = useCreateUser();
 
@@ -74,17 +77,8 @@ const UserManagement: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const filteredUsers = useMemo(() => {
-    if (!users || !Array.isArray(users)) return [];
-    return users.filter((user) => {
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-      const matchesSearch =
-        user.fullName?.toLowerCase().includes(searchQuery) ||
-        user.username?.toLowerCase().includes(searchQuery) ||
-        user.email?.toLowerCase().includes(searchQuery);
-      return matchesStatus && matchesSearch;
-    });
-  }, [users, statusFilter, searchQuery]);
+  // Search and status are applied server-side; no client-side filtering needed
+  const filteredUsers = users;
 
   const allSelected = filteredUsers.length > 0 && filteredUsers.every((u) => selectedIds.has(u.id));
   const someSelected = filteredUsers.some((u) => selectedIds.has(u.id));

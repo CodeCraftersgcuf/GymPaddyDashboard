@@ -46,18 +46,35 @@ interface FetchAllUsersForExportParams {
   status?: string;
   search?: string;
   limit?: number;
+  section?: 'social' | 'marketplace' | 'connect' | 'gym';
 }
 
-export const useGetAllUsers = (page = 1, limit = 20, options?: UseQueryOptions<UsersPage>) => {
+export const useGetAllUsers = (
+  page = 1,
+  limit = 20,
+  filters?: { search?: string; status?: string; section?: 'social' | 'marketplace' | 'connect' | 'gym' },
+  options?: UseQueryOptions<UsersPage>
+) => {
+  const search = filters?.search?.trim() || '';
+  const status = filters?.status && filters.status !== 'all' ? filters.status : '';
+  const section = filters?.section || '';
+
   return useQuery<UsersPage>({
-    queryKey: ['users', page, limit],
+    queryKey: ['users', page, limit, search, status, section],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', String(limit));
+      if (search) params.set('search', search);
+      if (status) params.set('status', status);
+      if (section) params.set('section', section);
+
       const response = await apiCall.get<UsersPage>(
-        `${API_ROUTES.USERS.GET_ALL}?page=${page}&limit=${limit}`
+        `${API_ROUTES.USERS.GET_ALL}?${params.toString()}`
       );
       return {
-        users: response.users || [],
-        pagination: response.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: limit },
+        users: response?.users ?? [],
+        pagination: response?.pagination ?? { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: limit },
       };
     },
     ...options,
@@ -68,6 +85,7 @@ export const fetchAllUsersForExport = async ({
   status,
   search,
   limit = 200,
+  section,
 }: FetchAllUsersForExportParams = {}): Promise<User[]> => {
   const allUsers: User[] = [];
   let page = 1;
@@ -85,13 +103,15 @@ export const fetchAllUsersForExport = async ({
     if (search && search.trim()) {
       params.set('search', search.trim());
     }
+    if (section) {
+      params.set('section', section);
+    }
 
     const response = await apiCall.get<UsersPage>(
       `${API_ROUTES.USERS.GET_ALL}?${params.toString()}`
     );
-
-    const pageUsers = response.users || [];
-    const pagination = response.pagination || { totalPages: 1 };
+    const pageUsers = response?.users || [];
+    const pagination = response?.pagination || { totalPages: 1 };
 
     allUsers.push(...pageUsers);
     totalPages = pagination.totalPages || 1;

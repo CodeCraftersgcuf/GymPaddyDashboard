@@ -38,7 +38,12 @@ const Transaction: React.FC = () => {
     return transactions.filter((item) => {
       const matchesTab = activeTab === 'all' || item.type === activeTab;
       const matchesStatus = transactionStatus === 'all' || item.status === transactionStatus;
-      const matchesSearch = searchQuery === '' || item.id?.toString().toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch = q === '' ||
+        item.id?.toString().toLowerCase().includes(q) ||
+        (item.fullName ?? '').toLowerCase().includes(q) ||
+        (item.username ?? '').toLowerCase().includes(q) ||
+        (item.email ?? '').toLowerCase().includes(q);
 
       let matchesDate = true;
       if (dateFilter !== 'all') {

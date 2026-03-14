@@ -74,7 +74,12 @@ const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) =>
             <MoreDropdown menuClass="min-w-[140px] bg-white">
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
                 <button
-                  onClick={handleHide}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!hidePost.isPending) handleHide();
+                  }}
                   disabled={hidePost.isPending}
                   className="py-2 px-2 hover:underline cursor-pointer text-left flex items-center gap-2 disabled:opacity-50 py-4"
                 >
@@ -84,6 +89,7 @@ const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) =>
                     : (displayData.isHidden ? 'Unhide Post' : 'Hide Post')}
                 </button>
                 <button
+                  type="button"
                   onClick={handleDelete}
                   disabled={deletePost.isPending}
                   className="py-2 px-2 hover:underline cursor-pointer py-4 text-left flex items-center gap-2 text-red-600 disabled:opacity-50"

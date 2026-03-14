@@ -9,6 +9,7 @@ import SearchFilter from '../../../components/SearchFilter';
 import TableCan from '../../../components/TableCan';
 import { UserPostHeaders } from '../../../constants/Data';
 import Pagination from '../../../components/Pagination';
+import { getDateThreshold } from '../../../constants/help';
 
 interface props {
     data: any;
@@ -17,6 +18,7 @@ interface props {
 const PostPortion: React.FC<props> = ({ data }) => {
     const [boosted, setBoosted] = useState('all');
     const [type, setType] = useState('all');
+    const [dateFilter, setDateFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 20;
@@ -30,6 +32,17 @@ const PostPortion: React.FC<props> = ({ data }) => {
         }
 
         let temp = [...data];
+
+        // Date filter
+        if (dateFilter && dateFilter !== 'all') {
+            const threshold = getDateThreshold(dateFilter);
+            if (threshold) {
+                temp = temp.filter((item) => {
+                    const itemDate = item.createdAt ? new Date(item.createdAt) : item.created_at ? new Date(item.created_at) : null;
+                    return itemDate && itemDate >= threshold;
+                });
+            }
+        }
 
         // Boosted filter
         if (boosted === 'boosted') {
@@ -59,7 +72,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
         setFilteredData(temp);
         setCurrentPage(1);
         setSelectedIds(new Set());
-    }, [data, boosted, type, searchQuery]);
+    }, [data, boosted, type, searchQuery, dateFilter]);
 
     const totalItems = filteredData.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
@@ -81,8 +94,9 @@ const PostPortion: React.FC<props> = ({ data }) => {
                 <ItemAlign>
                     <Dropdown
                         options={dates}
-                        onChange={() => {}}
+                        onChange={(val: string) => setDateFilter(val)}
                         placeholder="Date"
+                        defaultValue="all"
                         position="left-0"
                     />
                     <Dropdown

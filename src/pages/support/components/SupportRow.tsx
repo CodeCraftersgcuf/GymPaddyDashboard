@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { avatarUrl } from '../../../constants/help';
 import ChatModal from './ChatModal';
 import Button from '../../../components/Buttons/Button';
+import { useUpdateTicket } from '../../../utils/mutations/supportMutations';
 
 interface User {
   id?: number;
@@ -27,11 +28,20 @@ interface Props {
   onToggle?: (id: string) => void;
 }
 
+const TICKET_STATUSES = ['open', 'pending', 'in_progress', 'closed'] as const;
+
 const SupportRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
   const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
   const [isChatOpen, setisChatOpen] = useState(false);
+  const updateTicket = useUpdateTicket();
 
   const userId = displayData.user_id ?? displayData.user?.id;
+  const currentStatus = (displayData.status || 'open').toLowerCase();
+
+  const handleStatusChange = (newStatus: string) => {
+    if (newStatus === currentStatus) return;
+    updateTicket.mutate({ id: String(displayData.id), data: { status: newStatus as any } });
+  };
 
   const handleChat = () => {
     setisChatOpen(!isChatOpen);
@@ -55,7 +65,18 @@ const SupportRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => 
         </td>
         <td className="p-2 py-4">{displayData.subject || 'General'}</td>
         <td className="p-2 py-4 max-w-[200px] truncate">{displayData.message}</td>
-        <td className="p-2 py-4 capitalize">{displayData.status}</td>
+        <td className="p-2 py-4">
+          <select
+            value={currentStatus}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            disabled={updateTicket.isPending}
+            className="capitalize border border-gray-300 rounded px-2 py-1 text-sm bg-white min-w-[100px] disabled:opacity-50"
+          >
+            {TICKET_STATUSES.map((s) => (
+              <option key={s} value={s}>{s.replace('_', ' ')}</option>
+            ))}
+          </select>
+        </td>
         <td className="p-2 py-4">
           {new Date(displayData.created_at).toLocaleString()}
         </td>

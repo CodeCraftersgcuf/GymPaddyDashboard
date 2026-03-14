@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { userTableHeaders } from "../../../constants/Data";
 import Horizontal from "../../../components/alignments/Horizontal";
 import StatsCard from "../../../components/StatsCard";
@@ -28,7 +28,10 @@ const UserManagementConnect: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: sectionStats, isLoading: statsLoading } = useGetUserStatsBySection();
-  const { data: usersPage, isLoading: usersLoading } = useGetAllUsers(currentPage, ITEMS_PER_PAGE);
+  const { data: usersPage, isLoading: usersLoading } = useGetAllUsers(currentPage, ITEMS_PER_PAGE, {
+    search: searchQuery,
+    status: statusFilter,
+  });
   const users = usersPage?.users ?? [];
   const pagination = usersPage?.pagination;
   const createUserMutation = useCreateUser();
@@ -83,19 +86,7 @@ const UserManagementConnect: React.FC = () => {
       ]
     : [];
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-    return users.filter((user) => {
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-      const q = searchQuery.toLowerCase();
-      const matchesSearch =
-        !q ||
-        user.fullName?.toLowerCase().includes(q) ||
-        user.username?.toLowerCase().includes(q) ||
-        user.email?.toLowerCase().includes(q);
-      return matchesStatus && matchesSearch;
-    });
-  }, [users, statusFilter, searchQuery]);
+  const filteredUsers = users;
 
   const handleBulkAction = async (value: string) => {
     if (value !== 'ExportASCSV') return;

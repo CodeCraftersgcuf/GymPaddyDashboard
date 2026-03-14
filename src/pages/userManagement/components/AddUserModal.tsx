@@ -25,16 +25,40 @@ interface UserFormValues {
 
 const genders = ['Male', 'Female', 'Other'];
 
+// Phone: digits, optional leading +, optional spaces/dashes, 10–20 digits total
+const PHONE_REGEX = /^\+?[\d\s\-()]{10,20}$/;
+const phoneDigitsOnly = (v: string) => (v || '').replace(/\D/g, '').length >= 10;
+
 const buildValidationSchema = (isEdit: boolean) => Yup.object().shape({
-  fullName: Yup.string().required('Full name is required'),
-  username: Yup.string().required('Username is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
-  phoneNumber: Yup.string().required('Phone number is required'),
-  gender: Yup.string().required('Gender is required'),
-  age: Yup.number().min(1, 'Age must be positive').required('Age is required'),
+  fullName: Yup.string()
+    .trim()
+    .required('Full name is required')
+    .min(2, 'Full name must be at least 2 characters'),
+  username: Yup.string()
+    .trim()
+    .required('Username is required')
+    .min(2, 'Username must be at least 2 characters'),
+  email: Yup.string()
+    .trim()
+    .email('Please enter a valid email')
+    .required('Email is required'),
+  phoneNumber: Yup.string()
+    .trim()
+    .required('Phone number is required')
+    .matches(PHONE_REGEX, 'Enter a valid phone number (10–20 digits, e.g. +1234567890)')
+    .test('min-digits', 'Phone number must have at least 10 digits', phoneDigitsOnly),
+  gender: Yup.string().required('Please select a gender'),
+  age: Yup.number()
+    .transform((v) => (v === '' || v === null || isNaN(Number(v)) ? undefined : Number(v)))
+    .required('Age is required')
+    .integer('Age must be a whole number')
+    .min(1, 'Age must be at least 1')
+    .max(120, 'Age must be 120 or less'),
   password: isEdit
     ? Yup.string().optional()
-    : Yup.string().min(6, 'Minimum 6 characters').required('Password is required'),
+    : Yup.string()
+        .required('Password is required')
+        .min(6, 'Password must be at least 6 characters'),
   profile_picture: Yup.mixed().nullable(),
 });
 
@@ -82,6 +106,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
       <Formik
         initialValues={initialValues}
         validationSchema={buildValidationSchema(isEdit)}
+        validateOnBlur={true}
+        validateOnChange={true}
         onSubmit={async (values) => {
           setSubmitError(null);
           setSubmitting(true);
@@ -94,8 +120,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
           }
         }}
       >
-        {({ errors, touched, setFieldValue }) => (
-          <Form className="p-6 space-y-5">
+        {({ errors, touched, setFieldValue, submitCount }) => {
+          const showError = (name: keyof UserFormValues) =>
+            Boolean(errors[name]) && (touched[name] || submitCount > 0);
+          return (
+          <Form className="p-6 space-y-5" autoComplete="off">
             {/* Profile Upload */}
             <div className="flex justify-center">
               <label className="cursor-pointer">
@@ -123,27 +152,27 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
 
             {/* Fields */}
             {[
-              { name: 'fullName', placeholder: 'Full name' },
-              { name: 'username', placeholder: 'Username' },
-              { name: 'email', placeholder: 'Email', type: 'email' },
-              { name: 'phoneNumber', placeholder: 'Phone number' },
-              { name: 'age', placeholder: 'Age', type: 'number' },
-            ].map(({ name, placeholder, type = 'text' }) => (
+              { name: 'fullName' as const, placeholder: 'Full name', minLength: 2, autoComplete: 'off' },
+              { name: 'username' as const, placeholder: 'Username', minLength: 2, autoComplete: 'off' },
+              { name: 'email' as const, placeholder: 'Email', type: 'email' as const, autoComplete: 'off' },
+              { name: 'phoneNumber' as const, placeholder: 'Phone number (e.g. +1234567890)', autoComplete: 'off' },
+              { name: 'age' as const, placeholder: 'Age', type: 'number' as const, min: 1, max: 120, autoComplete: 'off' },
+            ].map(({ name, placeholder, type = 'text', minLength, min, max, autoComplete }) => (
               <div key={name}>
                 <Field
                   name={name}
                   placeholder={placeholder}
                   type={type}
+                  min={min}
+                  max={max}
+                  minLength={minLength}
+                  autoComplete={autoComplete}
                   className={`w-full px-4 py-3 rounded-lg border ${
-                    touched[name as keyof UserFormValues] && errors[name as keyof UserFormValues]
-                      ? 'border-red-500 text-red-500'
-                      : 'border-gray-200'
-                  } focus:outline-none`}
+                    showError(name) ? 'border-red-500 text-red-500' : 'border-gray-200'
+                  } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                 />
-                {touched[name as keyof UserFormValues] && errors[name as keyof UserFormValues] && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors[name as keyof UserFormValues] as string}
-                  </p>
+                {showError(name) && (
+                  <p className="text-red-500 text-sm mt-1">{errors[name] as string}</p>
                 )}
               </div>
             ))}
@@ -154,17 +183,17 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
                 as="select"
                 name="gender"
                 className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.gender && touched.gender ? 'border-red-500 text-red-500' : 'border-gray-200'
-                } focus:outline-none`}
+                  showError('gender') ? 'border-red-500 text-red-500' : 'border-gray-200'
+                } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
               >
-                <option value="">Gender</option>
+                <option value="">Select gender</option>
                 {genders.map((g) => (
                   <option key={g} value={g}>
                     {g}
                   </option>
                 ))}
               </Field>
-              {errors.gender && touched.gender && (
+              {showError('gender') && (
                 <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
               )}
             </div>
@@ -174,13 +203,13 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
               <div className="relative">
                 <Field
                   name="password"
-                  placeholder="Password"
+                  placeholder="Password (min 6 characters)"
                   type={showPassword ? 'text' : 'password'}
+                  minLength={6}
+                  autoComplete="new-password"
                   className={`w-full px-4 py-3 rounded-lg border ${
-                    errors.password && touched.password
-                      ? 'border-red-500 text-red-500'
-                      : 'border-gray-200'
-                  } focus:outline-none`}
+                    showError('password') ? 'border-red-500 text-red-500' : 'border-gray-200'
+                  } focus:outline-none focus:ring-2 focus:ring-red-500/20`}
                 />
                 <span
                   onClick={() => setShowPassword(!showPassword)}
@@ -188,7 +217,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
                 >
                   <Eye className="w-5 h-5" />
                 </span>
-                {errors.password && touched.password && (
+                {showError('password') && (
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
               </div>
@@ -206,7 +235,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
               {submitting ? 'Saving...' : isEdit ? 'Update' : 'Save'}
             </button>
           </Form>
-        )}
+          );
+        }}
       </Formik>
     </Modal>
   );

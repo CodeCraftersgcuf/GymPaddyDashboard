@@ -1,5 +1,9 @@
+const ROW_NUMBER_HEADER = 'No.';
+
 /**
  * Converts an array of objects to a CSV string and triggers a browser download.
+ * Prepends a "No." column with sequential row numbers (1, 2, 3, ...) so numbering
+ * is not affected by deleted items or non-sequential IDs.
  * @param data     Array of plain objects to export
  * @param filename Desired filename without extension
  */
@@ -12,9 +16,11 @@ export function exportToCsv<T extends Record<string, any>>(data: T[], filename =
     return String(val);
   };
 
-  const headers = Object.keys(data[0]);
-  const rows = data.map((row) =>
+  const dataHeaders = Object.keys(data[0]);
+  const headers = [ROW_NUMBER_HEADER, ...dataHeaders];
+  const rows = data.map((row, index) =>
     headers.map((h) => {
+      if (h === ROW_NUMBER_HEADER) return String(index + 1);
       const cell = flattenValue(row[h]);
       // Wrap in quotes if cell contains comma, newline or quote
       return /[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell;

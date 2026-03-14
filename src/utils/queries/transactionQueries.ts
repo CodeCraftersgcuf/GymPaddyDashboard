@@ -7,6 +7,7 @@ export interface Transaction {
   transactionId?: number;
   fullName?: string;
   username?: string | null;
+  email?: string | null;
   profile_picture?: string | null;
   amount: number;
   type: 'topup' | 'withdrawal' | string;

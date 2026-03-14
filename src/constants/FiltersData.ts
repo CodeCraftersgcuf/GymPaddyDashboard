@@ -1,9 +1,10 @@
 export const dates = [
-    {name:'today', value: 'today'},
-    {name:'week', value: '7'},
-    {name:'month', value: '30'},
-    {name:'year', value: '365'},
-]
+    { name: 'all', value: 'all' },
+    { name: 'today', value: 'today' },
+    { name: 'week', value: '7' },
+    { name: 'month', value: '30' },
+    { name: 'year', value: '365' },
+];
 export const notificationStatus = [
     {
         name: 'all',
