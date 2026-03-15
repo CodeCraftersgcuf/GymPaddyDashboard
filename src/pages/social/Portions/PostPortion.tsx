@@ -4,12 +4,12 @@ import Horizontal from '../../../components/alignments/Horizontal';
 import Vertical from '../../../components/alignments/Vertical';
 import ItemAlign from '../../../components/alignments/ItemAlign';
 import Dropdown from '../../../components/Dropdown';
-import { boostedFilter, dates, socialFilter } from '../../../constants/FiltersData';
+import { boostedFilter, dates, months, years, socialFilter } from '../../../constants/FiltersData';
 import SearchFilter from '../../../components/SearchFilter';
 import TableCan from '../../../components/TableCan';
 import { UserPostHeaders } from '../../../constants/Data';
 import Pagination from '../../../components/Pagination';
-import { getDateThreshold } from '../../../constants/help';
+import { getDateThreshold, getRangeForMonth, getRangeForYear } from '../../../constants/help';
 
 interface props {
     data: any;
@@ -19,6 +19,8 @@ const PostPortion: React.FC<props> = ({ data }) => {
     const [boosted, setBoosted] = useState('all');
     const [type, setType] = useState('all');
     const [dateFilter, setDateFilter] = useState('all');
+    const [specificMonth, setSpecificMonth] = useState(String(new Date().getMonth()));
+    const [specificYear, setSpecificYear] = useState(String(new Date().getFullYear()));
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 20;
@@ -35,12 +37,26 @@ const PostPortion: React.FC<props> = ({ data }) => {
 
         // Date filter
         if (dateFilter && dateFilter !== 'all') {
-            const threshold = getDateThreshold(dateFilter);
-            if (threshold) {
+            if (dateFilter === 'specific_month') {
+                const [start, end] = getRangeForMonth(parseInt(specificMonth, 10), parseInt(specificYear, 10));
                 temp = temp.filter((item) => {
                     const itemDate = item.createdAt ? new Date(item.createdAt) : item.created_at ? new Date(item.created_at) : null;
-                    return itemDate && itemDate >= threshold;
+                    return itemDate && itemDate >= start && itemDate < end;
                 });
+            } else if (dateFilter === 'specific_year') {
+                const [start, end] = getRangeForYear(parseInt(specificYear, 10));
+                temp = temp.filter((item) => {
+                    const itemDate = item.createdAt ? new Date(item.createdAt) : item.created_at ? new Date(item.created_at) : null;
+                    return itemDate && itemDate >= start && itemDate < end;
+                });
+            } else {
+                const threshold = getDateThreshold(dateFilter);
+                if (threshold) {
+                    temp = temp.filter((item) => {
+                        const itemDate = item.createdAt ? new Date(item.createdAt) : item.created_at ? new Date(item.created_at) : null;
+                        return itemDate && itemDate >= threshold;
+                    });
+                }
             }
         }
 
@@ -72,7 +88,7 @@ const PostPortion: React.FC<props> = ({ data }) => {
         setFilteredData(temp);
         setCurrentPage(1);
         setSelectedIds(new Set());
-    }, [data, boosted, type, searchQuery, dateFilter]);
+    }, [data, boosted, type, searchQuery, dateFilter, specificMonth, specificYear]);
 
     const totalItems = filteredData.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
@@ -99,6 +115,15 @@ const PostPortion: React.FC<props> = ({ data }) => {
                         defaultValue="all"
                         position="left-0"
                     />
+                    {dateFilter === 'specific_month' && (
+                        <>
+                            <Dropdown options={months} onChange={(val) => setSpecificMonth(val)} placeholder="Month" defaultValue={specificMonth} position="left-0" />
+                            <Dropdown options={years} onChange={(val) => setSpecificYear(val)} placeholder="Year" defaultValue={specificYear} position="left-0" />
+                        </>
+                    )}
+                    {dateFilter === 'specific_year' && (
+                        <Dropdown options={years} onChange={(val) => setSpecificYear(val)} placeholder="Year" defaultValue={specificYear} position="left-0" />
+                    )}
                     <Dropdown
                         options={boostedFilter}
                         onChange={(val: string) => setBoosted(val)}

@@ -39,11 +39,15 @@ const Transaction: React.FC = () => {
       const matchesTab = activeTab === 'all' || item.type === activeTab;
       const matchesStatus = transactionStatus === 'all' || item.status === transactionStatus;
       const q = searchQuery.trim().toLowerCase();
+      const name = (item.fullName ?? (item as any).fullname ?? '').toString().toLowerCase();
+      const username = (item.username ?? '').toString().toLowerCase();
+      const email = (item.email ?? '').toString().toLowerCase();
+      const idStr = (item.id ?? (item as any).transactionId ?? '').toString().toLowerCase();
       const matchesSearch = q === '' ||
-        item.id?.toString().toLowerCase().includes(q) ||
-        (item.fullName ?? '').toLowerCase().includes(q) ||
-        (item.username ?? '').toLowerCase().includes(q) ||
-        (item.email ?? '').toLowerCase().includes(q);
+        idStr.includes(q) ||
+        name.includes(q) ||
+        username.includes(q) ||
+        email.includes(q);
 
       let matchesDate = true;
       if (dateFilter !== 'all') {

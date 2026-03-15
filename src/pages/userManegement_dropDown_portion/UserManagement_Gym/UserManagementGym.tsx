@@ -31,6 +31,7 @@ const UserManagementGym: React.FC = () => {
   const { data: usersPage, isLoading: usersLoading } = useGetAllUsers(currentPage, ITEMS_PER_PAGE, {
     search: searchQuery,
     status: statusFilter,
+    section: 'gym',
   });
   const users = usersPage?.users ?? [];
   const pagination = usersPage?.pagination;
@@ -95,6 +96,7 @@ const UserManagementGym: React.FC = () => {
       const exportUsers = await fetchAllUsersForExport({
         status: statusFilter,
         search: searchQuery,
+        section: 'gym',
       });
       exportToCsv(exportUsers, 'users');
     } catch (error) {

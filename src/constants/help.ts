@@ -68,6 +68,20 @@ export function getDateThreshold(filterValue: string): Date | null {
     }
 }
 
+/** Start and end of a given month (0-indexed month 0-11). */
+export function getRangeForMonth(month: number, year: number): [Date, Date] {
+    const start = new Date(year, month, 1, 0, 0, 0, 0);
+    const end = new Date(year, month + 1, 1, 0, 0, 0, 0);
+    return [start, end];
+}
+
+/** Start and end of a given year. */
+export function getRangeForYear(year: number): [Date, Date] {
+    const start = new Date(year, 0, 1, 0, 0, 0, 0);
+    const end = new Date(year + 1, 0, 1, 0, 0, 0, 0);
+    return [start, end];
+}
+
 export function formatCreatedAt(timestamp : any) {
     const date = new Date(timestamp);
 

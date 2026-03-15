@@ -76,8 +76,9 @@ const StatusPortion: React.FC<props> = ({ data }) => {
                 <ItemAlign>
                     <Dropdown
                         options={dates}
-                        onChange={() => {}}
+                        onChange={(val: string) => setDateFilter(val)}
                         placeholder="Date"
+                        defaultValue="all"
                         position="left-0"
                     />
                     <Dropdown

@@ -30,17 +30,24 @@ interface Props {
 
 const TICKET_STATUSES = ['open', 'pending', 'in_progress', 'closed'] as const;
 
+function normalizeStatus(status: string | undefined): string {
+  const s = (status || 'open').toLowerCase().replace(/\s+/g, '_');
+  if (TICKET_STATUSES.includes(s as any)) return s;
+  if (s === 'in_progress' || s === 'inprogress') return 'in_progress';
+  return 'open';
+}
+
 const SupportRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => {
   const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
   const [isChatOpen, setisChatOpen] = useState(false);
   const updateTicket = useUpdateTicket();
 
   const userId = displayData.user_id ?? displayData.user?.id;
-  const currentStatus = (displayData.status || 'open').toLowerCase();
+  const currentStatus = normalizeStatus(displayData.status);
 
   const handleStatusChange = (newStatus: string) => {
     if (newStatus === currentStatus) return;
-    updateTicket.mutate({ id: String(displayData.id), data: { status: newStatus as any } });
+    updateTicket.mutate({ id: String(displayData.id), data: { status: newStatus } });
   };
 
   const handleChat = () => {
@@ -70,12 +77,17 @@ const SupportRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) => 
             value={currentStatus}
             onChange={(e) => handleStatusChange(e.target.value)}
             disabled={updateTicket.isPending}
-            className="capitalize border border-gray-300 rounded px-2 py-1 text-sm bg-white min-w-[100px] disabled:opacity-50"
+            onClick={(e) => e.stopPropagation()}
+            className="capitalize border border-gray-300 rounded px-2 py-1.5 text-sm bg-white min-w-[120px] disabled:opacity-50 cursor-pointer focus:ring-2 focus:ring-red-500/30 focus:border-red-400"
+            title="Change ticket status"
           >
             {TICKET_STATUSES.map((s) => (
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
             ))}
           </select>
+          {updateTicket.isPending && (
+            <span className="ml-1 text-xs text-gray-500">Saving...</span>
+          )}
         </td>
         <td className="p-2 py-4">
           {new Date(displayData.created_at).toLocaleString()}

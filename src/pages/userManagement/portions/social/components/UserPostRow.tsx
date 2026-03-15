@@ -18,6 +18,7 @@ const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) =>
   const isSelected = selectedIds?.has(String(displayData.id)) ?? false;
   const [showBoostStats, setShowBoostStats] = useState(false);
   const [showPost, setShowPost] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const hidePost = useHidePost();
   const deletePost = useDeletePost();
 
@@ -41,7 +42,7 @@ const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) =>
 
   return (
     <>
-      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : displayData.isHidden ? 'bg-gray-50 opacity-70' : ''}`}>
+      <tr className={`hover:bg-gray-100 transition cursor-pointer relative ${isSelected ? 'bg-red-50' : displayData.isHidden ? 'bg-gray-50' : ''} ${dropdownOpen ? 'z-[99]' : ''}`}>
         <td className="p-4">
           <input type="checkbox" checked={isSelected} onChange={(e) => { e.stopPropagation(); onToggle?.(String(displayData.id)); }} className="cursor-pointer" />
         </td>
@@ -68,10 +69,10 @@ const UserPostRow: React.FC<Props> = ({ displayData, selectedIds, onToggle }) =>
           {displayData.boostStatus || 'No'}
         </td>
         <td className="p-4">{displayData.date || ''}</td>
-        <td className="p-4">
+        <td className={`p-4 ${dropdownOpen ? 'relative z-[99]' : ''}`}>
           <div className="flex gap-2 items-center">
             <Button handleFunction={() => setShowBoostStats(true)}>Details</Button>
-            <MoreDropdown menuClass="min-w-[140px] bg-white">
+            <MoreDropdown menuClass="min-w-[140px] bg-white" onOpenChange={setDropdownOpen}>
               <div className="flex flex-col gap-1 px-1 text-sm text-black">
                 <button
                   type="button"

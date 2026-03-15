@@ -29,8 +29,9 @@ export const useGetAllTransactions = (options?: UseQueryOptions<Transaction[]>) 
   return useQuery<Transaction[]>({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const response = await apiCall.get<{ transactions: Transaction[] }>(API_ROUTES.TRANSACTIONS.GET_ALL);
-      return Array.isArray(response.transactions) ? response.transactions : [];
+      const response = await apiCall.get<any>(API_ROUTES.TRANSACTIONS.GET_ALL);
+      const list = response?.transactions ?? response?.data?.transactions;
+      return Array.isArray(list) ? list : [];
     },
     ...options,
   });

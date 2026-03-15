@@ -23,6 +23,7 @@ const Support: React.FC = () => {
     { name: 'all', value: 'all' },
     { name: 'open', value: 'open' },
     { name: 'pending', value: 'pending' },
+    { name: 'in progress', value: 'in_progress' },
     { name: 'closed', value: 'closed' },
   ];
 
@@ -64,7 +65,8 @@ const Support: React.FC = () => {
         (activeTab === 'market' && (subject.includes('market') || subject.includes('marketplace'))) ||
         (activeTab === 'gym' && (subject.includes('gym') || subject.includes('hub')));
 
-      const statusMatch = selectedStatus === "all" || (ticket.status || '').toLowerCase() === selectedStatus;
+      const ticketStatus = (ticket.status || '').toLowerCase().replace(/\s+/g, '_');
+      const statusMatch = selectedStatus === "all" || ticketStatus === selectedStatus;
 
       const dateMatch =
         selectedDate === 'all' ||

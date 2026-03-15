@@ -78,7 +78,7 @@ const Setting: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Live Cost
           </label>
-          <p className="text-xs text-gray-400 mb-2">Set cost per minute for live</p>
+          <p className="text-xs text-gray-400 mb-2">Cost (₦) charged once when a user starts a live stream. Set to 0 to allow free streaming.</p>
           <input
             type="number"
             min="0"

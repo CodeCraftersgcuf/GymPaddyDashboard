@@ -6,6 +6,7 @@ interface MoreDropdownProps {
   buttonClass?: string;
   menuClass?: string;
   children?: ReactNode;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const MoreDropdown: React.FC<MoreDropdownProps> = ({
@@ -13,11 +14,18 @@ const MoreDropdown: React.FC<MoreDropdownProps> = ({
   buttonClass = "",
   menuClass = "",
   children,
+  onOpenChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
+  const toggleDropdown = () => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      onOpenChange?.(next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -26,6 +34,7 @@ const MoreDropdown: React.FC<MoreDropdownProps> = ({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        onOpenChange?.(false);
       }
     };
 
@@ -34,7 +43,7 @@ const MoreDropdown: React.FC<MoreDropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, []);
+  }, [onOpenChange]);
 
   return (
     <div className={`relative w-fit ${dropdownClass}`} ref={dropdownRef}>
@@ -49,7 +58,7 @@ const MoreDropdown: React.FC<MoreDropdownProps> = ({
 
       {isOpen && (
         <div
-          className={`absolute top-[88%] mt-2 z-40 right-0 overflow-hidden shadow-md shadow-gray-900 rounded-md ${menuClass}`}
+          className={`absolute top-[88%] mt-2 z-[100] right-0 overflow-hidden shadow-lg shadow-gray-900 rounded-md ${menuClass}`}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {children ? (

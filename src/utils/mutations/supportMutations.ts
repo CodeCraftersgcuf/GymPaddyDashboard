@@ -13,7 +13,7 @@ export interface UpdateTicketPayload {
   subject?: string;
   message?: string;
   admin_reply?: string;
-  status?: 'open' | 'in_progress' | 'closed';
+  status?: 'open' | 'pending' | 'in_progress' | 'closed';
   priority?: 'low' | 'medium' | 'high';
 }
 

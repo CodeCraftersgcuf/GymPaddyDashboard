@@ -17,6 +17,7 @@ interface props {
 }
 
 const LivePortion: React.FC<props> = ({ data }) => {
+    const [dateFilter, setDateFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +32,16 @@ const LivePortion: React.FC<props> = ({ data }) => {
 
         let temp = [...data];
 
+        if (dateFilter && dateFilter !== 'all') {
+            const threshold = getDateThreshold(dateFilter);
+            if (threshold) {
+                temp = temp.filter((item) => {
+                    const itemDate = item.createdAt ? new Date(item.createdAt) : item.created_at ? new Date(item.created_at) : item.startedAt ? new Date(item.startedAt) : null;
+                    return itemDate && itemDate >= threshold;
+                });
+            }
+        }
+
         if (searchQuery.trim() !== '') {
             const q = searchQuery.toLowerCase();
             temp = temp.filter((item) =>
@@ -43,7 +54,7 @@ const LivePortion: React.FC<props> = ({ data }) => {
         setFilteredData(temp);
         setCurrentPage(1);
         setSelectedIds(new Set());
-    }, [data, searchQuery]);
+    }, [data, searchQuery, dateFilter]);
 
     const totalItems = filteredData.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
@@ -65,8 +76,9 @@ const LivePortion: React.FC<props> = ({ data }) => {
                 <ItemAlign>
                     <Dropdown
                         options={dates}
-                        onChange={() => {}}
+                        onChange={(val: string) => setDateFilter(val)}
                         placeholder="Date"
+                        defaultValue="all"
                         position="left-0"
                     />
                     <Dropdown
