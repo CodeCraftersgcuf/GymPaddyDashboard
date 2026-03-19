@@ -67,12 +67,20 @@ const ChatModal: React.FC<Props> = ({ isOpen, onClose, userId, userName, userPro
       });
 
       if (ticket.admin_reply?.trim()) {
-        msgs.push({
-          id: `admin_${ticket.id}`,
-          text: ticket.admin_reply,
-          isUser: false,
-          timestamp: new Date(ticket.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          ticketId: ticket.id,
+        // Admin replies are stored as newline-separated history; render each line as its own bubble
+        const adminLines = ticket.admin_reply
+          .split('\n')
+          .map((l: string) => l.trim())
+          .filter((l: string) => l.length > 0);
+
+        adminLines.forEach((line: string, idx: number) => {
+          msgs.push({
+            id: `admin_${ticket.id}_${idx}`,
+            text: line,
+            isUser: false,
+            timestamp: new Date(ticket.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            ticketId: ticket.id,
+          });
         });
       }
     });
