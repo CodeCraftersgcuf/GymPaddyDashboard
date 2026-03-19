@@ -16,6 +16,7 @@ interface LinkCompProps {
   icon: string;
   onClick: () => void;
   menuStatus: boolean;
+  badgeCount?: number;
 }
 
 const LinkComp: React.FC<LinkCompProps> = ({
@@ -26,9 +27,13 @@ const LinkComp: React.FC<LinkCompProps> = ({
   icon,
   onClick,
   menuStatus,
+  badgeCount,
 }) => {
   const location = useLocation();
   const [isActive, setIsActive] = useState<boolean>(isActiveCheck);
+  const safeBadgeCount = typeof badgeCount === 'number' ? badgeCount : 0;
+  const showBadge = safeBadgeCount > 0;
+  const badgeText = safeBadgeCount > 99 ? '99+' : String(safeBadgeCount);
 
   useEffect(() => {
     setIsActive(
@@ -48,7 +53,16 @@ const LinkComp: React.FC<LinkCompProps> = ({
           ${isActive ? "bg-theme-dark text-white" : "text-black hover:bg-[#FF0000] hover:text-white"}`}
       >
         <div className="flex items-center gap-3">
-          <img src={icon} alt={`${name} icon`} className={`w-5 h-5 ${isActive && 'invert'}`} />
+          <div className="relative">
+            <img src={icon} alt={`${name} icon`} className={`w-5 h-5 ${isActive && 'invert'}`} />
+            {showBadge && (
+              <span
+                className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] leading-none px-1.5 py-0.5 rounded-full border-2 border-white"
+              >
+                {badgeText}
+              </span>
+            )}
+          </div>
           {!menuStatus && <span className="font-medium">{name}</span>}
         </div>
         {!menuStatus && sub.length > 0 && (

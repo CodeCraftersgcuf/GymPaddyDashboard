@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Eye, EyeOff } from 'lucide-react';
 import Modal from '../../../../components/Modal';
 import { avatarUrl } from '../../../../constants/help';
 import { Link } from 'react-router-dom';
@@ -21,6 +21,7 @@ interface Props {
 const AdminRow: React.FC<Props> = ({ displayData }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: displayData.fullName,
     email: displayData.email,
@@ -96,7 +97,11 @@ const AdminRow: React.FC<Props> = ({ displayData }) => {
         </td>
       </tr>
 
-      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Admin">
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setShowPassword(false); }}
+        title="Edit Admin"
+      >
         <div className="flex flex-col gap-4 p-4">
           <div className="flex justify-center">
             <img
@@ -118,14 +123,26 @@ const AdminRow: React.FC<Props> = ({ displayData }) => {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             className="border p-2 border-gray-200 rounded"
+            autoComplete="new-email"
           />
-          <input
-            type="password"
-            placeholder="New password (leave blank to keep current)"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="border p-2 border-gray-200 rounded"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="New password (leave blank to keep current)"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="border p-2 pr-10 border-gray-200 rounded w-full"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {editError && (
             <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{editError}</p>

@@ -11,6 +11,8 @@ interface BusinessRowProps {
     businessName: string;
     category: string;
     status: 'approved' | 'pending' | 'rejected';
+    approvedByName?: string | null;
+    rejectedByName?: string | null;
     created_at: string;
     businessEmail: string;
     businessPhone: string;
@@ -58,6 +60,13 @@ const VerificationRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds,
         <td className="p-2 py-4">
           <span className={`w-4 h-4 inline-block rounded ${statusColor[displayData.status] || 'bg-gray-400'}`}></span>
         </td>
+        <td className="p-2 py-4 text-sm text-gray-700">
+          {displayData.status === 'approved'
+            ? displayData.approvedByName || '—'
+            : displayData.status === 'rejected'
+              ? displayData.rejectedByName || '—'
+              : '—'}
+        </td>
         <td className="p-2 py-4">{displayData.created_at}</td>
         <td className="p-2 py-4">
           <button 
@@ -80,6 +89,8 @@ const VerificationRow: React.FC<BusinessRowProps> = ({ displayData, selectedIds,
           phone: displayData.businessPhone || displayData.userPhone || '',
           document: storageUrl(displayData.photo) || '',
           status: displayData.status,
+          approvedByName: displayData.approvedByName,
+          rejectedByName: displayData.rejectedByName,
         }}
       />
     </>

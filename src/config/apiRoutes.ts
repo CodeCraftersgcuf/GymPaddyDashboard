@@ -120,6 +120,7 @@ export const API_ROUTES = {
   NOTIFICATIONS: {
     GET_ALL: '/admin/notifications',
     GET_BROADCAST_HISTORY: '/admin/notifications?broadcast=1',
+    GET_UNREAD_COUNT: '/admin/notifications/unread-count',
     GET_BY_ID: (id: string) => `/admin/notifications/${id}`,
     SEND: '/admin/notifications/send',
     SEND_BULK: '/admin/notifications/send-bulk',

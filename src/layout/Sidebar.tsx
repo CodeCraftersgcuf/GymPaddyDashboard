@@ -6,6 +6,7 @@ import images from "../constants/images";
 import { LogOut, ArrowLeft } from "lucide-react";
 import apiCall from "../utils/apiCall";
 import { API_ROUTES } from "../config/apiRoutes";
+import { useGetUnreadNotificationsCount } from "../utils/queries/notificationQueries";
 interface SidebarProps {
     setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -16,6 +17,11 @@ const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
     const [activeLink, setActiveLink] = useState<string>("/dashboard");
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
     const [loggingOut, setLoggingOut] = useState(false);
+    const { data: unreadSupportCount = 0 } = useGetUnreadNotificationsCount('support', {
+        // Keep badge responsive.
+        refetchInterval: 5_000,
+        refetchOnWindowFocus: true,
+    });
 
     useEffect(() => {
         setActiveLink(location.pathname);
@@ -78,6 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setMobileOpen }) => {
                                 isActiveCheck={activeLink === x.link}
                                 onClick={() => setActiveLink(x.link)}
                                 menuStatus={menuOpen}
+                                badgeCount={x.link === '/notification' ? unreadSupportCount : 0}
                             />
                         </li>
                     ))}

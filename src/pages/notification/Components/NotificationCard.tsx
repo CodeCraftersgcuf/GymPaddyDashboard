@@ -116,7 +116,7 @@ const NotificationCard: React.FC<ExtendedNotificationProps> = ({
             )}
             Review
           </button>
-          {status !== 'approved' && (
+          {type !== 'support' && status !== 'approved' && (
             <button
               onClick={handleApprove}
               disabled={updateStatusMutation.isPending}

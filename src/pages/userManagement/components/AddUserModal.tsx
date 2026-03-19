@@ -52,7 +52,7 @@ const buildValidationSchema = (isEdit: boolean) => Yup.object().shape({
     .transform((v) => (v === '' || v === null || isNaN(Number(v)) ? undefined : Number(v)))
     .required('Age is required')
     .integer('Age must be a whole number')
-    .min(1, 'Age must be at least 1')
+    .min(18, 'Age must be at least 18')
     .max(120, 'Age must be 120 or less'),
   password: isEdit
     ? Yup.string().optional()
@@ -156,7 +156,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, initialD
               { name: 'username' as const, placeholder: 'Username', minLength: 2, autoComplete: 'off' },
               { name: 'email' as const, placeholder: 'Email', type: 'email' as const, autoComplete: 'off' },
               { name: 'phoneNumber' as const, placeholder: 'Phone number (e.g. +1234567890)', autoComplete: 'off' },
-              { name: 'age' as const, placeholder: 'Age', type: 'number' as const, min: 1, max: 120, autoComplete: 'off' },
+              { name: 'age' as const, placeholder: 'Age', type: 'number' as const, min: 18, max: 120, autoComplete: 'off' },
             ].map(({ name, placeholder, type = 'text', minLength, min, max, autoComplete }) => (
               <div key={name}>
                 <Field

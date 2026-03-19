@@ -16,6 +16,8 @@ export interface Verification {
   businessPhone: string;
   photo?: string | null;
   status: 'pending' | 'approved' | 'rejected';
+  approvedByName?: string | null;
+  rejectedByName?: string | null;
   documents: string[];
   notes: string;
   created_at: string;

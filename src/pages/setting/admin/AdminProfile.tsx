@@ -6,7 +6,7 @@ import Modal from '../../../components/Modal';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { useGetAllAdmins } from '../../../utils/queries/adminQueries';
 import { useUpdateAdmin } from '../../../utils/mutations/adminMutations';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const AdminProfile: React.FC = () => {
   const [isEditModal, setIsEditModal] = useState(false);
@@ -15,6 +15,7 @@ const AdminProfile: React.FC = () => {
   const { data: admins, isLoading } = useGetAllAdmins();
   const updateMutation = useUpdateAdmin();
   const [editError, setEditError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const admin = admins?.find(a =>
     a.fullName === username || a.id === username || a.email === username
@@ -116,7 +117,11 @@ const AdminProfile: React.FC = () => {
         </button>
       </div>
 
-      <Modal isOpen={isEditModal} onClose={() => setIsEditModal(false)} title="Edit Admin">
+      <Modal
+        isOpen={isEditModal}
+        onClose={() => { setIsEditModal(false); setShowPassword(false); }}
+        title="Edit Admin"
+      >
         <div className="flex flex-col gap-4 p-4">
           <div className="flex justify-center">
             <img
@@ -138,14 +143,26 @@ const AdminProfile: React.FC = () => {
             value={editForm.email}
             onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
             className="border p-2 border-gray-200 rounded"
+            autoComplete="new-email"
           />
-          <input
-            type="password"
-            placeholder="New password (leave blank to keep current)"
-            value={editForm.password}
-            onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-            className="border p-2 border-gray-200 rounded"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="New password (leave blank to keep current)"
+              value={editForm.password}
+              onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+              className="border p-2 pr-10 border-gray-200 rounded w-full"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {editError && (
             <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{editError}</p>

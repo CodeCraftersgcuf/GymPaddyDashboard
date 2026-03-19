@@ -84,3 +84,21 @@ export const useGetBroadcastHistory = (options?: UseQueryOptions<Notification[]>
     ...options,
   });
 };
+
+export const useGetUnreadNotificationsCount = (
+  type: string = 'support',
+  options?: UseQueryOptions<number>
+) => {
+  return useQuery<number>({
+    queryKey: ['notifications', 'unread-count', type],
+    queryFn: async () => {
+      const res = await apiCall.get<{ count: number }>(
+        `${API_ROUTES.NOTIFICATIONS.GET_UNREAD_COUNT}?type=${encodeURIComponent(type)}`
+      );
+      return typeof res?.count === 'number' ? res.count : 0;
+    },
+    staleTime: 5_000,
+    refetchInterval: 5_000,
+    ...options,
+  });
+};

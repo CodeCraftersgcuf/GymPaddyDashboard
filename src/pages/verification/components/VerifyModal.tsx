@@ -18,6 +18,8 @@ interface BusinessModalProps {
     phone: string;
     document: string;
     status: 'approved' | 'pending' | 'rejected';
+    approvedByName?: string | null;
+    rejectedByName?: string | null;
   };
 }
 
@@ -196,6 +198,16 @@ const VerifyModal: React.FC<BusinessModalProps> = ({ isOpen, onClose, onSuccess,
 
               {/* Status */}
               <div className="relative">
+                {business.status !== 'pending' && (
+                  <div className="mb-3 text-sm text-gray-600">
+                    {business.status === 'approved' ? 'Approved by: ' : 'Rejected by: '}
+                    <span className="font-semibold text-gray-900">
+                      {business.status === 'approved'
+                        ? business.approvedByName || '—'
+                        : business.rejectedByName || '—'}
+                    </span>
+                  </div>
+                )}
                 <Field
                   as="select"
                   name="status"

@@ -16,12 +16,14 @@ import { useGetAllAdmins } from '../../../utils/queries/adminQueries'
 import { useCreateAdmin } from '../../../utils/mutations/adminMutations'
 import { getDateThreshold } from '../../../constants/help'
 import images from '../../../constants/images'
+import { Eye, EyeOff } from 'lucide-react'
 
 const AdminManagement: React.FC = () => {
   const [searchText, setSearchText] = useState('')
   const [dateFilter, setDateFilter] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [newAdmin, setNewAdmin] = useState({ fullName: '', email: '', password: '', role: 'admin' })
+  const [showPassword, setShowPassword] = useState(false)
   const [addError, setAddError] = useState<string | null>(null)
 
   const { data: admins, isLoading, error } = useGetAllAdmins()
@@ -135,7 +137,11 @@ const AdminManagement: React.FC = () => {
         />
       )}
 
-      <Modal isOpen={showAddModal} onClose={() => { setShowAddModal(false); setAddError(null); }} title="Add New Admin">
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => { setShowAddModal(false); setAddError(null); setShowPassword(false); }}
+        title="Add New Admin"
+      >
         <div className="flex flex-col gap-4 p-4">
           <input
             type="text"
@@ -143,6 +149,7 @@ const AdminManagement: React.FC = () => {
             value={newAdmin.fullName}
             onChange={(e) => setNewAdmin({ ...newAdmin, fullName: e.target.value })}
             className="border p-2 border-gray-200 rounded"
+            autoComplete="off"
           />
           <input
             type="email"
@@ -150,14 +157,26 @@ const AdminManagement: React.FC = () => {
             value={newAdmin.email}
             onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
             className="border p-2 border-gray-200 rounded"
+            autoComplete="new-email"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={newAdmin.password}
-            onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
-            className="border p-2 border-gray-200 rounded"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={newAdmin.password}
+              onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+              className="border p-2 pr-10 border-gray-200 rounded w-full"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 cursor-pointer"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {addError && (
             <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{addError}</p>

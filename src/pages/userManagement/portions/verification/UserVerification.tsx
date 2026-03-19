@@ -65,6 +65,16 @@ const UserVerification: React.FC = () => {
                                         <p className="text-red-300 text-sm mb-6 capitalize">
                                             {verification.status}
                                         </p>
+                                        {verification.status === 'approved' && (
+                                            <p className="text-red-200/80 text-sm mb-6">
+                                                Approved by: <span className="font-semibold">{verification.approvedByName || '—'}</span>
+                                            </p>
+                                        )}
+                                        {verification.status === 'rejected' && (
+                                            <p className="text-red-200/80 text-sm mb-6">
+                                                Rejected by: <span className="font-semibold">{verification.rejectedByName || '—'}</span>
+                                            </p>
+                                        )}
                                         <button
                                             onClick={() => setIsEditModal(true)}
                                             className="bg-white text-red-600 px-8 py-2 rounded-full font-semibold hover:bg-red-50 transition-colors"
@@ -161,6 +171,8 @@ const UserVerification: React.FC = () => {
                                     phone: verification.businessPhone || verification.userPhone,
                                     document: storageUrl(verification.photo) || '',
                                     status: verification.status,
+                                    approvedByName: verification.approvedByName,
+                                    rejectedByName: verification.rejectedByName,
                                 }}
                             />
                         </>

@@ -157,7 +157,7 @@ const Verification: React.FC = () => {
         </div>
       ) : (
         <TableCan
-          headerTr={["Name", "Business Name", "Category", "Status", "Date", "Action"]}
+          headerTr={["Name", "Business Name", "Category", "Status", "Approved By", "Date", "Action"]}
           dataTr={filteredData}
           TrName={VerificationRow}
           allSelected={allSelected}
